@@ -41,27 +41,29 @@ export function Marca({
     )
   }
 
-  const escalas = {
-    compacto: { g5: 'text-2xl', esportes: 'text-[0.5rem]' },
-    normal: { g5: 'text-3xl sm:text-4xl', esportes: 'text-[0.6rem] sm:text-[0.68rem]' },
-    grande: { g5: 'text-5xl', esportes: 'text-[0.85rem]' },
+  /*
+   * O lockup é quase quadrado (164x139), então numa barra horizontal ele só
+   * ganha presença se usar quase toda a altura disponível do cabeçalho.
+   */
+  const alturas = {
+    compacto: 'h-10',
+    normal: 'h-13 sm:h-15',
+    grande: 'h-20',
   }[tamanho]
 
+  /*
+   * Assinatura desenhada em vetor (scripts/gerar-logo.mjs). É <img> comum e
+   * não next/image de propósito: SVG já é resolução-independente e leve
+   * (2,8 KB), então otimizar não traz nada — e `images.localPatterns` do
+   * next.config restringe o otimizador aos uploads do Payload.
+   */
   return (
-    <span className={cn('block text-center font-display leading-none', className)}>
-      <span className={cn('block font-black tracking-tight text-g5-200', escalas.g5)}>G5</span>
-      {/*
-        O tracking à direita empurra o texto meio caractere; a margem esquerda
-        compensa e mantém o bloco centrado sob o "G5".
-      */}
-      <span
-        className={cn(
-          'ml-[0.34em] mt-0.5 block font-semibold uppercase tracking-[0.34em] text-white/75',
-          escalas.esportes,
-        )}
-      >
-        Esportes
-      </span>
-    </span>
+    <img
+      src="/marca-g5.svg"
+      alt={nome}
+      width={164}
+      height={139}
+      className={cn('w-auto', alturas, className)}
+    />
   )
 }

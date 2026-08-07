@@ -106,7 +106,8 @@ export function CalendarioProvas({ provas }: { provas: Prova[] }) {
   return (
     <div>
       {/* Filtros */}
-      <div className="sticky top-19 z-30 -mx-5 border-y border-line bg-white/95 px-5 py-4 backdrop-blur-md lg:-mx-8 lg:px-8">
+      {/* Gruda logo abaixo do cabeçalho: faixa de 4px + barra (h-19 / sm:h-21). */}
+      <div className="sticky top-20 z-30 -mx-5 border-y border-line bg-white/95 px-5 py-4 backdrop-blur-md sm:top-22 lg:-mx-8 lg:px-8">
         <div className="flex flex-wrap items-center gap-2">
           <span className="mr-1 font-mono text-xs font-semibold uppercase tracking-[0.2em] text-ink-muted">
             Distância

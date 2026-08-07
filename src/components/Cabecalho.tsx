@@ -21,7 +21,7 @@ export async function Cabecalho() {
         }}
       />
 
-      <div className="mx-auto flex h-18 max-w-7xl items-center gap-2 px-5 sm:gap-4 lg:gap-6 lg:px-8">
+      <div className="mx-auto flex h-19 max-w-7xl items-center gap-2 px-5 sm:h-21 sm:gap-4 lg:gap-6 lg:px-8">
         <Link
           href="/"
           className="shrink-0 transition-opacity hover:opacity-85"
