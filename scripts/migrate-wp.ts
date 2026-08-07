@@ -122,6 +122,26 @@ const RENOMEAR_PAGINA: Record<string, string> = {
   'assessoria-esportiva': 'treinos',
 }
 
+/**
+ * Títulos que no WordPress vinham com pontuação de ordenação de menu
+ * ("-Horários", "#Corrida"). Aqui eles ganham o nome que aparece no menu novo.
+ */
+const RENOMEAR_TITULO: Record<string, string> = {
+  horarios: 'Horários e locais',
+  'assessoria-esportiva': 'Treinos',
+}
+
+/**
+ * Rede de segurança para o mesmo problema em páginas fora do mapa acima: tira
+ * do começo do título os caracteres usados só para ordenar menu.
+ *
+ * A cerquilha NÃO entra: em vários títulos ela é hashtag de verdade
+ * ("#VemPraRua", "#DomingoInsanoG5") e apagá-la mudaria o sentido.
+ */
+function limparTitulo(titulo: string): string {
+  return titulo.replace(/^[\s\-–—*.·]+/, '').trim() || titulo
+}
+
 /** Calendários de anos anteriores: preservados, mas fora dos menus. */
 const PAGINAS_ARQUIVADAS = new Set([
   'corridas-2016',
@@ -723,7 +743,8 @@ async function main() {
 
     try {
       const dados = {
-        titulo: textoSimples(pagina.title.rendered, 250),
+        titulo:
+          RENOMEAR_TITULO[pagina.slug] ?? limparTitulo(textoSimples(pagina.title.rendered, 250)),
         slug,
         resumo: textoSimples(pagina.excerpt.rendered || pagina.content.rendered, 280),
         arquivada: PAGINAS_ARQUIVADAS.has(pagina.slug),
