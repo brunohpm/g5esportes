@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { Mail, MapPin, Phone } from 'lucide-react'
 import { getConfiguracoes, getMenu } from '@/lib/payload'
+import { Marca } from './Marca'
 import { RedesSociais } from './RedesSociais'
 
 const ANO = new Date().getFullYear()
@@ -22,12 +23,7 @@ export async function Rodape() {
       <div className="mx-auto max-w-7xl px-5 py-16 lg:px-8">
         <div className="grid gap-12 lg:grid-cols-[1.2fr_2fr]">
           <div>
-            <div className="flex items-baseline gap-2 font-display leading-none">
-              <span className="text-5xl font-extrabold text-g5-200">G5</span>
-              <span className="text-2xl font-semibold uppercase tracking-[0.18em] text-white/70">
-                Esportes
-              </span>
-            </div>
+            <Marca cfg={cfg} tamanho="grande" className="text-left" />
 
             {cfg.slogan && (
               <p className="mt-4 max-w-sm text-lg leading-snug text-white/70">{cfg.slogan}</p>

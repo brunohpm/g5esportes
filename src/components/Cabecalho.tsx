@@ -1,18 +1,13 @@
-import Image from 'next/image'
 import Link from 'next/link'
 import { ExternalLink } from 'lucide-react'
-import type { Midia } from '@/payload-types'
-import { caminhoMidia } from '@/lib/utils'
 import { getConfiguracoes, getMenu } from '@/lib/payload'
+import { Marca } from './Marca'
 import { MenuMobile } from './MenuMobile'
 import { RedesSociais } from './RedesSociais'
 
 export async function Cabecalho() {
   const [menu, cfg] = await Promise.all([getMenu(), getConfiguracoes()])
   const itens = menu.principal ?? []
-
-  // O cabeçalho é escuro: prefere a versão clara do logo, cai na normal.
-  const logo = ((cfg.logoClara ?? cfg.logo) as Midia | null | undefined) ?? null
 
   return (
     <header className="sticky top-0 z-50 bg-g5-950/95 text-white backdrop-blur-md">
@@ -29,33 +24,10 @@ export async function Cabecalho() {
       <div className="mx-auto flex h-18 max-w-7xl items-center gap-2 px-5 sm:gap-4 lg:gap-6 lg:px-8">
         <Link
           href="/"
-          className="group flex shrink-0 items-baseline gap-1.5 font-display leading-none sm:gap-2"
+          className="shrink-0 transition-opacity hover:opacity-85"
           aria-label={`${cfg.nomeSite ?? 'G5 Esportes'} — página inicial`}
         >
-          {logo?.url ? (
-            /*
-             * Assim que o arquivo do logo for enviado em Configurações do site
-             * → "Logo para fundo escuro", ele substitui o lettering. Enquanto
-             * não houver, o texto abaixo desenha a marca na própria Montserrat.
-             */
-            <Image
-              src={caminhoMidia(logo.url)!}
-              alt={cfg.nomeSite ?? 'G5 Esportes'}
-              width={logo.width ?? 200}
-              height={logo.height ?? 56}
-              priority
-              className="h-9 w-auto sm:h-11"
-            />
-          ) : (
-            <>
-              <span className="text-3xl font-black tracking-tight text-g5-200 transition-colors group-hover:text-white sm:text-4xl">
-                G5
-              </span>
-              <span className="hidden text-lg font-semibold uppercase tracking-[0.18em] text-white/70 sm:block sm:text-xl">
-                Esportes
-              </span>
-            </>
-          )}
+          <Marca cfg={cfg} />
         </Link>
 
         {/*
