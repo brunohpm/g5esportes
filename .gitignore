@@ -40,7 +40,13 @@ next-env.d.ts
 
 .env
 
+# Uploads e backups: vivem no servidor, não no repositório.
 /media
+/backups
+
+# Saídas dos scripts auxiliares.
+/.screenshots
+/migration-report.md
 
 # Playwright
 node_modules/

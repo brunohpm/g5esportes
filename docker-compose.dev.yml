@@ -1,0 +1,24 @@
+# Banco de desenvolvimento local.
+# A aplicação roda fora do Docker em dev (`npm run dev`); só o Postgres sobe aqui.
+# A porta 5433 evita conflito com um Postgres já instalado na máquina.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: g5-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: g5
+      POSTGRES_PASSWORD: g5local
+      POSTGRES_DB: g5esportes
+    ports:
+      - '5433:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U g5 -d g5esportes']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  pgdata:

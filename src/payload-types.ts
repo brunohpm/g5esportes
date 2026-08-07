@@ -63,43 +63,71 @@ export type SupportedTimezones =
 
 export interface Config {
   auth: {
-    users: UserAuthOperations;
+    usuarios: UsuarioAuthOperations;
   };
   blocks: {};
   collections: {
-    users: User;
-    media: Media;
+    posts: Post;
+    paginas: Pagina;
+    provas: Prova;
+    professores: Professore;
+    albuns: Albun;
+    categorias: Categoria;
+    tags: Tag;
+    midia: Midia;
+    usuarios: Usuario;
     'payload-kv': PayloadKv;
+    'payload-jobs': PayloadJob;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
   collectionsJoins: {};
   collectionsSelect: {
-    users: UsersSelect<false> | UsersSelect<true>;
-    media: MediaSelect<false> | MediaSelect<true>;
+    posts: PostsSelect<false> | PostsSelect<true>;
+    paginas: PaginasSelect<false> | PaginasSelect<true>;
+    provas: ProvasSelect<false> | ProvasSelect<true>;
+    professores: ProfessoresSelect<false> | ProfessoresSelect<true>;
+    albuns: AlbunsSelect<false> | AlbunsSelect<true>;
+    categorias: CategoriasSelect<false> | CategoriasSelect<true>;
+    tags: TagsSelect<false> | TagsSelect<true>;
+    midia: MidiaSelect<false> | MidiaSelect<true>;
+    usuarios: UsuariosSelect<false> | UsuariosSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
+    'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
   };
   db: {
-    defaultIDType: string;
+    defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    configuracoes: Configuracoe;
+    menu: Menu;
+  };
+  globalsSelect: {
+    configuracoes: ConfiguracoesSelect<false> | ConfiguracoesSelect<true>;
+    menu: MenuSelect<false> | MenuSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
   };
-  user: User;
+  user: Usuario;
   jobs: {
-    tasks: unknown;
+    tasks: {
+      schedulePublish: TaskSchedulePublish;
+      inline: {
+        input: unknown;
+        output: unknown;
+      };
+    };
     workflows: unknown;
   };
 }
-export interface UserAuthOperations {
+export interface UsuarioAuthOperations {
   forgotPassword: {
     email: string;
     password: string;
@@ -118,11 +146,258 @@ export interface UserAuthOperations {
   };
 }
 /**
+ * Notícias, artigos e avisos. É aqui que o blog do site é alimentado.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
+ * via the `definition` "posts".
  */
-export interface User {
-  id: string;
+export interface Post {
+  id: number;
+  titulo: string;
+  /**
+   * Duas ou três linhas que aparecem na listagem e no compartilhamento. Se deixar vazio, geramos a partir do texto.
+   */
+  resumo?: string | null;
+  /**
+   * Formato horizontal (paisagem) funciona melhor. Ideal: 1600×900.
+   */
+  capa?: (number | null) | Midia;
+  conteudo: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Escolha ao menos uma. Define onde o post aparece na navegação.
+   */
+  categorias: (number | Categoria)[];
+  tags?: (number | Tag)[] | null;
+  /**
+   * Liga o post a provas do calendário (opcional).
+   */
+  provasRelacionadas?: (number | Prova)[] | null;
+  publicadoEm: string;
+  autor?: (number | null) | Usuario;
+  /**
+   * Posts destacados aparecem em evidência na página inicial.
+   */
+  destaque?: boolean | null;
+  /**
+   * Preenchido automaticamente pelo título. Cuidado: alterar depois de publicado quebra o link antigo.
+   */
+  slug: string;
+  legado?: {
+    wpId?: number | null;
+    urlAntiga?: string | null;
+  };
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Midia;
+  };
+  updatedAt: string;
+  createdAt: string;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * Fotos e arquivos usados no site.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "midia".
+ */
+export interface Midia {
+  id: number;
+  /**
+   * Descreva a imagem em poucas palavras. Serve para leitores de tela e para o Google.
+   */
+  alt?: string | null;
+  creditos?: string | null;
+  /**
+   * Preenchido pela migração. Evita baixar a mesma imagem duas vezes.
+   */
+  origemWordpress?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumb?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    card?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+    hero?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * As seções do blog. Mantenha poucas — o menu do blog é montado a partir daqui.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categorias".
+ */
+export interface Categoria {
+  id: number;
+  titulo: string;
+  /**
+   * Aparece no topo da página da categoria e na meta description.
+   */
+  descricao?: string | null;
+  cor?: ('green' | 'lime' | 'forest' | 'slate') | null;
+  ordem?: number | null;
+  /**
+   * Usados para redirecionar as URLs antigas de categoria.
+   */
+  slugsAntigos?: string[] | null;
+  /**
+   * Preenchido automaticamente pelo título. Cuidado: alterar depois de publicado quebra o link antigo.
+   */
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Assuntos livres. Use para relacionar posts; a navegação principal usa categorias.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags".
+ */
+export interface Tag {
+  id: number;
+  titulo: string;
+  /**
+   * Preenchido automaticamente pelo título. Cuidado: alterar depois de publicado quebra o link antigo.
+   */
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * As corridas do calendário. Cadastre uma vez e ela aparece em todos os lugares.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "provas".
+ */
+export interface Prova {
+  id: number;
+  titulo: string;
+  data: string;
+  horario?: string | null;
+  cidade: string;
+  uf?:
+    | (
+        | 'PR'
+        | 'SC'
+        | 'RS'
+        | 'SP'
+        | 'RJ'
+        | 'MG'
+        | 'ES'
+        | 'BA'
+        | 'PE'
+        | 'CE'
+        | 'DF'
+        | 'GO'
+        | 'MT'
+        | 'MS'
+        | 'PA'
+        | 'AM'
+        | 'RN'
+        | 'PB'
+        | 'AL'
+        | 'SE'
+        | 'PI'
+        | 'MA'
+        | 'TO'
+        | 'RO'
+        | 'AC'
+        | 'AP'
+        | 'RR'
+        | 'EX'
+      )
+    | null;
+  /**
+   * Uma por linha, no formato "5km", "21km". Os filtros do site usam exatamente esse texto.
+   */
+  distancias?: string[] | null;
+  tipo?: ('rua' | 'trail' | 'ultra' | 'infantil' | 'revezamento' | 'caminhada' | 'multi') | null;
+  organizador?: string | null;
+  /**
+   * Endereço do site oficial ou da página de inscrição.
+   */
+  linkInscricao?: string | null;
+  observacoes?: string | null;
+  /**
+   * Calculado a partir da data.
+   */
+  ano: number;
+  /**
+   * Provas-alvo da assessoria. Aparecem primeiro e na home.
+   */
+  destaque?: boolean | null;
+  cancelada?: boolean | null;
+  /**
+   * Preenchido automaticamente pelo título. Cuidado: alterar depois de publicado quebra o link antigo.
+   */
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Quem pode entrar no painel e publicar conteúdo.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "usuarios".
+ */
+export interface Usuario {
+  id: number;
+  nome: string;
+  /**
+   * Editor cria e publica posts, provas, álbuns e páginas. Administrador também mexe em usuários e configurações do site.
+   */
+  role: 'admin' | 'editor';
+  /**
+   * Aparece no rodapé dos posts assinados por este usuário.
+   */
+  bio?: string | null;
+  foto?: (number | null) | Midia;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -140,33 +415,316 @@ export interface User {
       }[]
     | null;
   password?: string | null;
-  collection: 'users';
+  collection: 'usuarios';
 }
 /**
+ * Páginas institucionais montadas por blocos.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media".
+ * via the `definition` "paginas".
  */
-export interface Media {
-  id: string;
-  alt: string;
+export interface Pagina {
+  id: number;
+  titulo: string;
+  /**
+   * Usado no compartilhamento e na busca do Google.
+   */
+  resumo?: string | null;
+  /**
+   * Monte a página empilhando blocos. Arraste para reordenar.
+   */
+  layout?:
+    | (
+        | {
+            titulo: string;
+            subtitulo?: string | null;
+            imagem?: (number | null) | Midia;
+            alinhamento?: ('esquerda' | 'centro') | null;
+            botoes?:
+              | {
+                  rotulo: string;
+                  url: string;
+                  estilo?: ('primario' | 'secundario' | 'texto') | null;
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'hero';
+          }
+        | {
+            conteudo: {
+              root: {
+                type: string;
+                children: {
+                  type: any;
+                  version: number;
+                  [k: string]: unknown;
+                }[];
+                direction: ('ltr' | 'rtl') | null;
+                format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                indent: number;
+                version: number;
+              };
+              [k: string]: unknown;
+            };
+            largura?: ('leitura' | 'total') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'texto';
+          }
+        | {
+            titulo?: string | null;
+            subtitulo?: string | null;
+            itens?:
+              | {
+                  icone?:
+                    | (
+                        | 'corrida'
+                        | 'saude'
+                        | 'horarios'
+                        | 'calendario'
+                        | 'grupo'
+                        | 'funcional'
+                        | 'app'
+                        | 'trofeu'
+                        | 'local'
+                      )
+                    | null;
+                  titulo: string;
+                  texto?: string | null;
+                  url?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            colunas?: ('2' | '3' | '4') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'cards';
+          }
+        | {
+            titulo?: string | null;
+            planos?:
+              | {
+                  nome: string;
+                  /**
+                   * Ex.: R$ 145
+                   */
+                  preco?: string | null;
+                  /**
+                   * Ex.: /mês
+                   */
+                  periodo?: string | null;
+                  descricao?: string | null;
+                  itens?:
+                    | {
+                        item: string;
+                        id?: string | null;
+                      }[]
+                    | null;
+                  destaque?: boolean | null;
+                  urlBotao?: string | null;
+                  rotuloBotao?: string | null;
+                  id?: string | null;
+                }[]
+              | null;
+            observacao?: string | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'precos';
+          }
+        | {
+            titulo: string;
+            texto?: string | null;
+            botoes?:
+              | {
+                  rotulo: string;
+                  url: string;
+                  estilo?: ('primario' | 'secundario' | 'texto') | null;
+                  id?: string | null;
+                }[]
+              | null;
+            fundo?: ('floresta' | 'lime') | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'chamada';
+          }
+        | {
+            titulo?: string | null;
+            quantidade?: number | null;
+            apenasDestaques?: boolean | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'listaProvas';
+          }
+        | {
+            titulo?: string | null;
+            /**
+             * Deixe vazio para mostrar todos, na ordem cadastrada.
+             */
+            professores?: (number | Professore)[] | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'equipe';
+          }
+        | {
+            titulo?: string | null;
+            albuns: (number | Albun)[];
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'galeria';
+          }
+        | {
+            titulo?: string | null;
+            /**
+             * Cole o endereço completo do vídeo.
+             */
+            url: string;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'video';
+          }
+        | {
+            titulo?: string | null;
+            perguntas?:
+              | {
+                  pergunta: string;
+                  resposta: {
+                    root: {
+                      type: string;
+                      children: {
+                        type: any;
+                        version: number;
+                        [k: string]: unknown;
+                      }[];
+                      direction: ('ltr' | 'rtl') | null;
+                      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+                      indent: number;
+                      version: number;
+                    };
+                    [k: string]: unknown;
+                  };
+                  id?: string | null;
+                }[]
+              | null;
+            id?: string | null;
+            blockName?: string | null;
+            blockType: 'faq';
+          }
+      )[]
+    | null;
+  /**
+   * Preenchido automaticamente pelo título. Cuidado: alterar depois de publicado quebra o link antigo.
+   */
+  slug: string;
+  /**
+   * Continua acessível pelo link direto, mas sai dos menus e recebe aviso de conteúdo antigo. Usado nos calendários de anos anteriores.
+   */
+  arquivada?: boolean | null;
+  ocultarDoSitemap?: boolean | null;
+  legado?: {
+    wpId?: number | null;
+    urlAntiga?: string | null;
+  };
+  meta?: {
+    title?: string | null;
+    description?: string | null;
+    /**
+     * Maximum upload file size: 12MB. Recommended file size for images is <500KB.
+     */
+    image?: (number | null) | Midia;
+  };
   updatedAt: string;
   createdAt: string;
-  url?: string | null;
-  thumbnailURL?: string | null;
-  filename?: string | null;
-  mimeType?: string | null;
-  filesize?: number | null;
-  width?: number | null;
-  height?: number | null;
-  focalX?: number | null;
-  focalY?: number | null;
+  _status?: ('draft' | 'published') | null;
+}
+/**
+ * A equipe técnica da G5.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "professores".
+ */
+export interface Professore {
+  id: number;
+  titulo: string;
+  cref?: string | null;
+  funcao?: string | null;
+  /**
+   * Formato quadrado ou vertical. Ideal: 800×800.
+   */
+  foto?: (number | null) | Midia;
+  bio?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  especialidades?:
+    | {
+        item: string;
+        id?: string | null;
+      }[]
+    | null;
+  redes?: {
+    instagram?: string | null;
+    strava?: string | null;
+    email?: string | null;
+  };
+  ordem?: number | null;
+  /**
+   * Preenchido automaticamente pelo título. Cuidado: alterar depois de publicado quebra o link antigo.
+   */
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Fotos e vídeos de provas e treinos.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "albuns".
+ */
+export interface Albun {
+  id: number;
+  titulo: string;
+  data: string;
+  tipo: 'prova' | 'treino' | 'evento';
+  descricao?: string | null;
+  capa?: (number | null) | Midia;
+  /**
+   * Arraste várias de uma vez.
+   */
+  fotos?: (number | Midia)[] | null;
+  videos?:
+    | {
+        titulo?: string | null;
+        url: string;
+        id?: string | null;
+      }[]
+    | null;
+  prova?: (number | null) | Prova;
+  /**
+   * Preenchido automaticamente pelo título. Cuidado: alterar depois de publicado quebra o link antigo.
+   */
+  slug: string;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
-  id: string;
+  id: number;
   key: string;
   data:
     | {
@@ -180,23 +738,143 @@ export interface PayloadKv {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs".
+ */
+export interface PayloadJob {
+  id: number;
+  /**
+   * Input data provided to the job
+   */
+  input?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  taskStatus?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  completedAt?: string | null;
+  totalTried?: number | null;
+  /**
+   * If hasError is true this job will not be retried
+   */
+  hasError?: boolean | null;
+  /**
+   * If hasError is true, this is the error that caused it
+   */
+  error?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  /**
+   * Task execution log
+   */
+  log?:
+    | {
+        executedAt: string;
+        completedAt: string;
+        taskSlug: 'inline' | 'schedulePublish';
+        taskID: string;
+        input?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        output?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        state: 'failed' | 'succeeded';
+        error?:
+          | {
+              [k: string]: unknown;
+            }
+          | unknown[]
+          | string
+          | number
+          | boolean
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  taskSlug?: ('inline' | 'schedulePublish') | null;
+  queue?: string | null;
+  waitUntil?: string | null;
+  processing?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
-  id: string;
+  id: number;
   document?:
     | ({
-        relationTo: 'users';
-        value: string | User;
+        relationTo: 'posts';
+        value: number | Post;
       } | null)
     | ({
-        relationTo: 'media';
-        value: string | Media;
+        relationTo: 'paginas';
+        value: number | Pagina;
+      } | null)
+    | ({
+        relationTo: 'provas';
+        value: number | Prova;
+      } | null)
+    | ({
+        relationTo: 'professores';
+        value: number | Professore;
+      } | null)
+    | ({
+        relationTo: 'albuns';
+        value: number | Albun;
+      } | null)
+    | ({
+        relationTo: 'categorias';
+        value: number | Categoria;
+      } | null)
+    | ({
+        relationTo: 'tags';
+        value: number | Tag;
+      } | null)
+    | ({
+        relationTo: 'midia';
+        value: number | Midia;
+      } | null)
+    | ({
+        relationTo: 'usuarios';
+        value: number | Usuario;
       } | null);
   globalSlug?: string | null;
   user: {
-    relationTo: 'users';
-    value: string | User;
+    relationTo: 'usuarios';
+    value: number | Usuario;
   };
   updatedAt: string;
   createdAt: string;
@@ -206,10 +884,10 @@ export interface PayloadLockedDocument {
  * via the `definition` "payload-preferences".
  */
 export interface PayloadPreference {
-  id: string;
+  id: number;
   user: {
-    relationTo: 'users';
-    value: string | User;
+    relationTo: 'usuarios';
+    value: number | Usuario;
   };
   key?: string | null;
   value?:
@@ -229,7 +907,7 @@ export interface PayloadPreference {
  * via the `definition` "payload-migrations".
  */
 export interface PayloadMigration {
-  id: string;
+  id: number;
   name?: string | null;
   batch?: number | null;
   updatedAt: string;
@@ -237,9 +915,362 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
+ * via the `definition` "posts_select".
  */
-export interface UsersSelect<T extends boolean = true> {
+export interface PostsSelect<T extends boolean = true> {
+  titulo?: T;
+  resumo?: T;
+  capa?: T;
+  conteudo?: T;
+  categorias?: T;
+  tags?: T;
+  provasRelacionadas?: T;
+  publicadoEm?: T;
+  autor?: T;
+  destaque?: T;
+  slug?: T;
+  legado?:
+    | T
+    | {
+        wpId?: T;
+        urlAntiga?: T;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "paginas_select".
+ */
+export interface PaginasSelect<T extends boolean = true> {
+  titulo?: T;
+  resumo?: T;
+  layout?:
+    | T
+    | {
+        hero?:
+          | T
+          | {
+              titulo?: T;
+              subtitulo?: T;
+              imagem?: T;
+              alinhamento?: T;
+              botoes?:
+                | T
+                | {
+                    rotulo?: T;
+                    url?: T;
+                    estilo?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+        texto?:
+          | T
+          | {
+              conteudo?: T;
+              largura?: T;
+              id?: T;
+              blockName?: T;
+            };
+        cards?:
+          | T
+          | {
+              titulo?: T;
+              subtitulo?: T;
+              itens?:
+                | T
+                | {
+                    icone?: T;
+                    titulo?: T;
+                    texto?: T;
+                    url?: T;
+                    id?: T;
+                  };
+              colunas?: T;
+              id?: T;
+              blockName?: T;
+            };
+        precos?:
+          | T
+          | {
+              titulo?: T;
+              planos?:
+                | T
+                | {
+                    nome?: T;
+                    preco?: T;
+                    periodo?: T;
+                    descricao?: T;
+                    itens?:
+                      | T
+                      | {
+                          item?: T;
+                          id?: T;
+                        };
+                    destaque?: T;
+                    urlBotao?: T;
+                    rotuloBotao?: T;
+                    id?: T;
+                  };
+              observacao?: T;
+              id?: T;
+              blockName?: T;
+            };
+        chamada?:
+          | T
+          | {
+              titulo?: T;
+              texto?: T;
+              botoes?:
+                | T
+                | {
+                    rotulo?: T;
+                    url?: T;
+                    estilo?: T;
+                    id?: T;
+                  };
+              fundo?: T;
+              id?: T;
+              blockName?: T;
+            };
+        listaProvas?:
+          | T
+          | {
+              titulo?: T;
+              quantidade?: T;
+              apenasDestaques?: T;
+              id?: T;
+              blockName?: T;
+            };
+        equipe?:
+          | T
+          | {
+              titulo?: T;
+              professores?: T;
+              id?: T;
+              blockName?: T;
+            };
+        galeria?:
+          | T
+          | {
+              titulo?: T;
+              albuns?: T;
+              id?: T;
+              blockName?: T;
+            };
+        video?:
+          | T
+          | {
+              titulo?: T;
+              url?: T;
+              id?: T;
+              blockName?: T;
+            };
+        faq?:
+          | T
+          | {
+              titulo?: T;
+              perguntas?:
+                | T
+                | {
+                    pergunta?: T;
+                    resposta?: T;
+                    id?: T;
+                  };
+              id?: T;
+              blockName?: T;
+            };
+      };
+  slug?: T;
+  arquivada?: T;
+  ocultarDoSitemap?: T;
+  legado?:
+    | T
+    | {
+        wpId?: T;
+        urlAntiga?: T;
+      };
+  meta?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        image?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  _status?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "provas_select".
+ */
+export interface ProvasSelect<T extends boolean = true> {
+  titulo?: T;
+  data?: T;
+  horario?: T;
+  cidade?: T;
+  uf?: T;
+  distancias?: T;
+  tipo?: T;
+  organizador?: T;
+  linkInscricao?: T;
+  observacoes?: T;
+  ano?: T;
+  destaque?: T;
+  cancelada?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "professores_select".
+ */
+export interface ProfessoresSelect<T extends boolean = true> {
+  titulo?: T;
+  cref?: T;
+  funcao?: T;
+  foto?: T;
+  bio?: T;
+  especialidades?:
+    | T
+    | {
+        item?: T;
+        id?: T;
+      };
+  redes?:
+    | T
+    | {
+        instagram?: T;
+        strava?: T;
+        email?: T;
+      };
+  ordem?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "albuns_select".
+ */
+export interface AlbunsSelect<T extends boolean = true> {
+  titulo?: T;
+  data?: T;
+  tipo?: T;
+  descricao?: T;
+  capa?: T;
+  fotos?: T;
+  videos?:
+    | T
+    | {
+        titulo?: T;
+        url?: T;
+        id?: T;
+      };
+  prova?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categorias_select".
+ */
+export interface CategoriasSelect<T extends boolean = true> {
+  titulo?: T;
+  descricao?: T;
+  cor?: T;
+  ordem?: T;
+  slugsAntigos?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tags_select".
+ */
+export interface TagsSelect<T extends boolean = true> {
+  titulo?: T;
+  slug?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "midia_select".
+ */
+export interface MidiaSelect<T extends boolean = true> {
+  alt?: T;
+  creditos?: T;
+  origemWordpress?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumb?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        card?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+        hero?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "usuarios_select".
+ */
+export interface UsuariosSelect<T extends boolean = true> {
+  nome?: T;
+  role?: T;
+  bio?: T;
+  foto?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -259,29 +1290,42 @@ export interface UsersSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "media_select".
- */
-export interface MediaSelect<T extends boolean = true> {
-  alt?: T;
-  updatedAt?: T;
-  createdAt?: T;
-  url?: T;
-  thumbnailURL?: T;
-  filename?: T;
-  mimeType?: T;
-  filesize?: T;
-  width?: T;
-  height?: T;
-  focalX?: T;
-  focalY?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
   key?: T;
   data?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payload-jobs_select".
+ */
+export interface PayloadJobsSelect<T extends boolean = true> {
+  input?: T;
+  taskStatus?: T;
+  completedAt?: T;
+  totalTried?: T;
+  hasError?: T;
+  error?: T;
+  log?:
+    | T
+    | {
+        executedAt?: T;
+        completedAt?: T;
+        taskSlug?: T;
+        taskID?: T;
+        input?: T;
+        output?: T;
+        state?: T;
+        error?: T;
+        id?: T;
+      };
+  taskSlug?: T;
+  queue?: T;
+  waitUntil?: T;
+  processing?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -316,6 +1360,206 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   createdAt?: T;
 }
 /**
+ * Contato, redes sociais, horários e textos que aparecem em todo o site.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "configuracoes".
+ */
+export interface Configuracoe {
+  id: number;
+  nomeSite?: string | null;
+  slogan?: string | null;
+  /**
+   * Aparece no Google e no compartilhamento em redes sociais.
+   */
+  descricao?: string | null;
+  logo?: (number | null) | Midia;
+  logoClara?: (number | null) | Midia;
+  /**
+   * Usada quando um post não tem capa. Ideal: 1200×630.
+   */
+  imagemCompartilhamento?: (number | null) | Midia;
+  hero?: {
+    titulo?: string | null;
+    subtitulo?: string | null;
+    /**
+     * Horizontal, de preferência com o grupo em movimento. Ideal: 2000×1200.
+     */
+    imagem?: (number | null) | Midia;
+  };
+  /**
+   * A faixa de estatísticas logo abaixo do topo.
+   */
+  numeros?:
+    | {
+        valor: string;
+        rotulo: string;
+        id?: string | null;
+      }[]
+    | null;
+  email?: string | null;
+  /**
+   * Só números, com país e DDD. Ex.: 5541984680986
+   */
+  whatsapp?: string | null;
+  mensagemWhatsapp?: string | null;
+  telefone?: string | null;
+  localTreino?: string | null;
+  /**
+   * Endereço do Google Maps do ponto de encontro.
+   */
+  mapaUrl?: string | null;
+  horarios?:
+    | {
+        turma: string;
+        dias: string;
+        horario: string;
+        local?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  instagram?: string | null;
+  facebook?: string | null;
+  youtube?: string | null;
+  strava?: string | null;
+  /**
+   * Sistema externo de planilhas usado pelos alunos.
+   */
+  areaAlunoUrl?: string | null;
+  areaAlunoRotulo?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * Controla o menu do topo e os links do rodapé. Mantenha o topo com até 5 itens — é o que faz a navegação ficar legível.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "menu".
+ */
+export interface Menu {
+  id: number;
+  principal?:
+    | {
+        rotulo: string;
+        /**
+         * Caminho interno (ex.: /treinos) ou endereço completo.
+         */
+        url: string;
+        submenu?:
+          | {
+              rotulo: string;
+              url: string;
+              descricao?: string | null;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  rodape?:
+    | {
+        titulo: string;
+        links?:
+          | {
+              rotulo: string;
+              url: string;
+              id?: string | null;
+            }[]
+          | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "configuracoes_select".
+ */
+export interface ConfiguracoesSelect<T extends boolean = true> {
+  nomeSite?: T;
+  slogan?: T;
+  descricao?: T;
+  logo?: T;
+  logoClara?: T;
+  imagemCompartilhamento?: T;
+  hero?:
+    | T
+    | {
+        titulo?: T;
+        subtitulo?: T;
+        imagem?: T;
+      };
+  numeros?:
+    | T
+    | {
+        valor?: T;
+        rotulo?: T;
+        id?: T;
+      };
+  email?: T;
+  whatsapp?: T;
+  mensagemWhatsapp?: T;
+  telefone?: T;
+  localTreino?: T;
+  mapaUrl?: T;
+  horarios?:
+    | T
+    | {
+        turma?: T;
+        dias?: T;
+        horario?: T;
+        local?: T;
+        id?: T;
+      };
+  instagram?: T;
+  facebook?: T;
+  youtube?: T;
+  strava?: T;
+  areaAlunoUrl?: T;
+  areaAlunoRotulo?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "menu_select".
+ */
+export interface MenuSelect<T extends boolean = true> {
+  principal?:
+    | T
+    | {
+        rotulo?: T;
+        url?: T;
+        submenu?:
+          | T
+          | {
+              rotulo?: T;
+              url?: T;
+              descricao?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  rodape?:
+    | T
+    | {
+        titulo?: T;
+        links?:
+          | T
+          | {
+              rotulo?: T;
+              url?: T;
+              id?: T;
+            };
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "collections_widget".
  */
@@ -324,6 +1568,23 @@ export interface CollectionsWidget {
     [k: string]: unknown;
   };
   width: 'full';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskSchedulePublish".
+ */
+export interface TaskSchedulePublish {
+  input: {
+    type?: ('publish' | 'unpublish') | null;
+    locale?: string | null;
+    doc?: {
+      relationTo: 'posts';
+      value: number | Post;
+    } | null;
+    global?: string | null;
+    user?: (number | null) | Usuario;
+  };
+  output?: unknown;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

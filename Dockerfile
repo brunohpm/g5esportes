@@ -1,71 +1,65 @@
-# To use this Dockerfile, you have to set `output: 'standalone'` in your next.config.mjs file.
-# From https://github.com/vercel/next.js/blob/canary/examples/with-docker/Dockerfile
+# syntax=docker/dockerfile:1
 
-FROM node:22.17.0-alpine AS base
+# Node 22 LTS: exigido pelo Next 16 e pelo Payload 3.
+ARG NODE_VERSION=22-alpine
 
-# Install dependencies only when needed
-FROM base AS deps
-# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+# ── Dependências ─────────────────────────────────────────────────────────────
+FROM node:${NODE_VERSION} AS deps
+WORKDIR /app
+# libc6-compat é o que o sharp precisa no Alpine.
 RUN apk add --no-cache libc6-compat
+# O .npmrc precisa vir junto: ele tem `legacy-peer-deps=true`, e sem isso o
+# npm resolve a árvore de outro jeito e o `npm ci` acusa lock fora de sincronia.
+COPY package.json package-lock.json .npmrc ./
+RUN npm ci
+
+# ── Build ────────────────────────────────────────────────────────────────────
+FROM node:${NODE_VERSION} AS build
 WORKDIR /app
-
-# Install dependencies based on the preferred package manager
-COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
-RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
-  elif [ -f package-lock.json ]; then npm ci; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm i --frozen-lockfile; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
-
-
-# Rebuild the source code only when needed
-FROM base AS builder
-WORKDIR /app
+RUN apk add --no-cache libc6-compat
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Next.js collects completely anonymous telemetry data about general usage.
-# Learn more here: https://nextjs.org/telemetry
-# Uncomment the following line in case you want to disable telemetry during the build.
-# ENV NEXT_TELEMETRY_DISABLED 1
+# O build do Next lê o endereço público para gerar canonical, sitemap e og:image.
+ARG NEXT_PUBLIC_SERVER_URL
+ENV NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_OPTIONS="--no-deprecation --max-old-space-size=4096"
 
-RUN \
-  if [ -f yarn.lock ]; then yarn run build; \
-  elif [ -f package-lock.json ]; then npm run build; \
-  elif [ -f pnpm-lock.yaml ]; then corepack enable pnpm && pnpm run build; \
-  else echo "Lockfile not found." && exit 1; \
-  fi
+# `npx next build` e não `npm run build`: o script do package.json passa
+# `--max-old-space-size=8000` via cross-env, o que SOBRESCREVE o NODE_OPTIONS
+# acima. Chamando o next direto, o teto de 4 GB definido aqui é o que vale —
+# é isso que impede o build de esgotar a RAM de uma máquina sem swap.
+RUN npx next build
 
-# Production image, copy all the files and run next
-FROM base AS runner
+# ── Runtime ──────────────────────────────────────────────────────────────────
+FROM node:${NODE_VERSION} AS runtime
 WORKDIR /app
+RUN apk add --no-cache libc6-compat curl
 
-ENV NODE_ENV production
-# Uncomment the following line in case you want to disable telemetry during runtime.
-# ENV NEXT_TELEMETRY_DISABLED 1
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_OPTIONS=--no-deprecation
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+# O usuário `node` já existe na imagem oficial; nada roda como root.
+COPY --from=build --chown=node:node /app/.next/standalone ./
+COPY --from=build --chown=node:node /app/.next/static ./.next/static
+COPY --from=build --chown=node:node /app/public ./public
 
-# Remove this line if you do not have this folder
-COPY --from=builder /app/public ./public
+# Os uploads (bind) e o cache do otimizador de imagens (volume nomeado) são
+# montados aqui. Os dois alvos precisam EXISTIR e pertencer ao `node` ANTES do
+# mount: quando o alvo de um volume não existe na imagem, o Docker o cria
+# root:root — e o processo roda como `node` (UID 1000), então o next/image
+# ficaria sem conseguir gravar o cache e reprocessaria 2.817 imagens com sharp
+# a cada requisição, em 2 vCPU compartilhadas com outros clientes.
+RUN mkdir -p /app/media /app/.next/cache && chown -R node:node /app/media /app/.next
 
-# Set the correct permission for prerender cache
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
-
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
-
+USER node
 EXPOSE 3000
 
-ENV PORT 3000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
+  CMD curl -fsS http://127.0.0.1:3000/api/access > /dev/null || exit 1
 
-# server.js is created by next build from the standalone output
-# https://nextjs.org/docs/pages/api-reference/next-config-js/output
-CMD HOSTNAME="0.0.0.0" node server.js
+CMD ["node", "server.js"]

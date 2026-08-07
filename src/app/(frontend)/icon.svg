@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="G5 Esportes">
+  <rect width="64" height="64" rx="14" fill="#0A3D1C"/>
+  <!-- Raias em diagonal, o mesmo motivo do cabeçalho do site. -->
+  <path d="M-8 46 L18 -8 M6 46 L32 -8 M20 46 L46 -8 M34 46 L60 -8 M48 46 L74 -8"
+        stroke="#008A20" stroke-width="7" opacity=".45"/>
+  <text x="32" y="45" text-anchor="middle"
+        font-family="Impact, 'Arial Narrow', system-ui, sans-serif"
+        font-size="36" font-weight="700" fill="#B9FB9C" letter-spacing="-1">G5</text>
+</svg>

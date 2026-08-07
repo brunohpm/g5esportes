@@ -1,67 +1,204 @@
-# Payload Blank Template
+# G5 Esportes — site
 
-This template comes configured with the bare minimum to get started on anything you need.
+Site institucional e blog da G5 Esportes (assessoria de corrida, Curitiba/PR),
+substituindo o WordPress.com. Next.js 16 + Payload CMS 3 na mesma aplicação:
+o site em `/`, o painel de administração em `/admin`.
 
-## Quick start
+## Como rodar na sua máquina
 
-This template can be deployed directly from our Cloud hosting and it will setup MongoDB and cloud S3 object storage for media.
+Requisitos: Node 20.9+ (22 LTS é o ideal) e Docker.
 
-## Quick Start - local setup
+```bash
+cp .env.example .env      # os valores padrão já servem para desenvolvimento
+npm install
+npm run db:up             # sobe o Postgres em Docker, na porta 5433
+npm run dev               # http://localhost:3000
+```
 
-To spin up this template locally, follow these steps:
+Na primeira vez, popule o conteúdo:
 
-### Clone
+```bash
+npm run migrate:wp        # traz tudo do WordPress (demora ~20 min na 1ª vez)
+npm run seed              # menu, configurações, professores e calendário
+```
 
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
+> A ordem importa: `seed` depois de `migrate:wp`. A migração reescreve as
+> páginas, e o seed é quem coloca o bloco de equipe na página de professores.
 
-### Development
+O primeiro `migrate:wp` cria o usuário administrador e imprime a senha no
+terminal. Anote — ela não é mostrada de novo.
 
-1. First [clone the repo](#clone) if you have not done so already
-2. `cd my-project && cp .env.example .env` to copy the example environment variables. You'll need to add the `MONGODB_URL` from your Cloud project to your `.env` if you want to use S3 storage and the MongoDB database that was created for you.
+## Scripts
 
-3. `pnpm install && pnpm dev` to install dependencies and start the dev server
-4. open `http://localhost:3000` to open the app in your browser
+| Comando | O que faz |
+|---|---|
+| `npm run dev` | Site e painel em desenvolvimento |
+| `npm run build` / `npm start` | Build e execução de produção |
+| `npm run db:up` / `db:down` | Postgres local em Docker |
+| `npm run migrate:wp` | Importa o WordPress. Idempotente — pode repetir |
+| `npm run seed` | Configurações, menu, professores e provas |
+| `npm run check:redirects` | Confere se as URLs antigas respondem 301 e chegam a uma página real |
+| `npm run generate:types` | Regenera `src/payload-types.ts` após mexer em coleções |
+| `npm run generate:importmap` | Regenera o mapa de componentes do painel |
+| `node scripts/check-html.mjs` | Abre páginas no navegador e acusa erro de console/hidratação |
+| `node scripts/screenshots.mjs` | Prints das páginas principais para conferência visual |
 
-That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+Variáveis de ambiente aceitas pelos scripts: `DRY_RUN=1` e `SEM_IMAGENS=1`
+(migração), `TODOS=1` e `ALVO=<url>` (verificação de redirects).
 
-#### Docker (Optional)
+## Estrutura
 
-If you prefer to use Docker for local development instead of a local MongoDB instance, the provided docker-compose.yml file can be used.
+```text
+src/
+├── app/(frontend)/     site público
+├── app/(payload)/      painel — gerado pelo Payload, não editar à mão
+├── collections/        posts, páginas, provas, professores, álbuns, mídia…
+├── globals/            configurações do site e menu
+├── blocks/             blocos de layout das páginas
+├── components/         componentes do site
+├── lib/payload.ts      consultas ao CMS (com cache do React)
+├── middleware.ts       os ~1.600 redirects 301 do WordPress
+└── payload.config.ts   configuração central do CMS
+scripts/                migração, seed e ferramentas de verificação
+deploy/                 backup e restauração no servidor
+```
 
-To do so, follow these steps:
+## O conteúdo que veio do WordPress
 
-- Modify the `MONGODB_URL` in your `.env` file to `mongodb://127.0.0.1/<dbname>`
-- Modify the `docker-compose.yml` file's `MONGODB_URL` to match the above `<dbname>`
-- Run `docker-compose up` to start the database, optionally pass `-d` to run in the background.
+| Item | Origem | Resultado |
+|---|---|---|
+| Posts | 322 | 322, com URL antiga redirecionada |
+| Páginas | 20 | 14 migradas; 6 viraram redirect para a estrutura nova |
+| Imagens | 2.842 referenciadas | 2.817 baixadas (as 25 restantes já estavam quebradas no site antigo) |
+| Categorias | 16 | 6, consolidadas |
+| Tags | 1.224 | 285 (só as com 3+ posts) |
+| Calendário de provas | 14 páginas de texto | 171 provas estruturadas e filtráveis |
 
-## How it works
+Detalhes e falhas em `migration-report.md` (gerado pela migração).
 
-The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
+As imagens são baixadas redimensionadas para 1600px — o maior tamanho que o
+site exibe. Isso reduz o acervo de ~2,4 GB para ~700 MB sem perda visível.
 
-### Collections
+## Deploy no VPS
 
-See the [Collections](https://payloadcms.com/docs/configuration/collections) docs for details on how to extend this functionality.
+O alvo é o VPS **2.25.182.14** ("Shadowfax"), que **já hospeda formiz,
+metodoaxion e casadoauau**. Isso condiciona todo o desenho do deploy:
 
-- #### Users (Authentication)
+| Restrição do servidor | Consequência aqui |
+|---|---|
+| nginx do host é dono das portas 80/443 | Sem Caddy. A app escuta em `127.0.0.1:3001` e o nginx faz o proxy (`deploy/nginx-g5esportes.conf`) |
+| 7,8 GB de RAM **sem swap**, 2 vCPU | A imagem é construída na máquina de desenvolvimento e transferida pronta — um build lá poderia acionar o OOM killer contra o container de outro cliente |
+| Disco compartilhado com 3 clientes | Limites de memória e rotação de log por container; backup da mídia semanal, não diário |
+| certbot já instalado e renovando | O TLS segue o mesmo padrão dos outros sites |
 
-  Users are auth-enabled collections that have access to the admin panel.
+**Nunca** rode `docker system prune -a` nessa máquina: apagaria as imagens dos
+outros clientes e esta, que veio por `docker load` e não pode ser baixada de
+volta. Para liberar espaço: `docker builder prune -f`.
 
-  For additional help, see the official [Auth Example](https://github.com/payloadcms/payload/tree/3.x/examples/auth) or the [Authentication](https://payloadcms.com/docs/authentication/overview#authentication-overview) docs.
+### Primeira subida
 
-- #### Media
+```bash
+# 1. no servidor: estrutura e configuração
+ssh root@2.25.182.14 'mkdir -p /opt/g5esportes'
+scp -r docker-compose.yml deploy .env.producao.example root@2.25.182.14:/opt/g5esportes/
+ssh root@2.25.182.14 'cd /opt/g5esportes && cp .env.producao.example .env && nano .env'
 
-  This is the uploads enabled collection. It features pre-configured sizes, focal point and manual resizing to help you manage your pictures.
+# 2. na sua máquina: constrói, confere a arquitetura e envia a imagem
+npm run deploy:imagem
 
-### Docker
+# 3. conteúdo: dump do banco + mídia
+docker exec g5-postgres-dev pg_dump -U g5 -d g5esportes -Fc > g5.dump
+scp g5.dump root@2.25.182.14:/opt/g5esportes/
+tar -cf - media | ssh root@2.25.182.14 'tar -xf - -C /opt/g5esportes'
+ssh root@2.25.182.14 'chown -R 1000:1000 /opt/g5esportes/media'   # o container roda como UID 1000
+ssh root@2.25.182.14 'cd /opt/g5esportes && docker compose exec -T postgres pg_restore -U g5 -d g5esportes --clean --if-exists --no-owner < g5.dump'
 
-Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
+# 4. nginx: vhost novo (não encosta nos existentes)
+scp deploy/nginx-g5esportes.conf root@2.25.182.14:/etc/nginx/sites-available/g5esportes
+ssh root@2.25.182.14 'ln -sf /etc/nginx/sites-available/g5esportes /etc/nginx/sites-enabled/g5esportes \
+                      && nginx -t && systemctl reload nginx'
 
-1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
-1. Next run `docker-compose up`
-1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
+# 5. TLS
+ssh root@2.25.182.14 'certbot --nginx -d g5.prattsolutions.com.br --non-interactive --agree-tos -m SEU@EMAIL'
 
-That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
+# 6. backup no cron (ver cabeçalho de deploy/backup.sh)
+```
 
-## Questions
+Depois de **cada** passo que mexe no nginx, confira que os vizinhos seguem de
+pé antes de continuar:
 
-If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
+```bash
+for d in formiz.com.br metodoaxion.com.br api.casadoauau.com.br; do
+  curl -s -o /dev/null -w "$d -> %{http_code}\n" "https://$d"
+done
+```
+
+### Deploys seguintes
+
+```bash
+npm run deploy:imagem     # constrói, envia e sobe, com verificação de saúde
+```
+
+Cada envio deixa a versão anterior taggeada por data no servidor, então o
+rollback é `docker tag g5esportes:<data> g5esportes:latest && docker compose up -d`.
+
+### Renderização
+
+As páginas são renderizadas sob demanda (`dynamic = 'force-dynamic'`). Isso faz
+o build não precisar de banco e o conteúdo publicado aparecer na hora, sem
+espera de revalidação. Com o Postgres no mesmo host, o tempo de resposta fica
+entre 60 e 130 ms.
+
+### Backups
+
+Dump do banco todo dia, mídia aos domingos (700 MB comprimem pouco e o disco é
+dos quatro clientes):
+
+```bash
+ssh root@2.25.182.14 'chmod +x /opt/g5esportes/deploy/*.sh && crontab -e'
+# 10 3 * * *  /opt/g5esportes/deploy/backup.sh       >> /opt/g5esportes/backups/backup.log 2>&1
+# 40 3 * * 0  /opt/g5esportes/deploy/backup.sh midia >> /opt/g5esportes/backups/backup.log 2>&1
+```
+
+Backup que fica no mesmo servidor não protege de perda do servidor — vale
+configurar uma cópia externa (rclone) apontando para `/opt/g5esportes/backups`.
+
+### Estratégia de corte para g5esportes.com
+
+Hoje o site novo roda em `g5.prattsolutions.com.br`, que serve de homologação:
+o `robots.ts` bloqueia a indexação em qualquer endereço que não seja
+exatamente `https://g5esportes.com`, então o Google não vê conteúdo duplicado.
+
+Quando o cliente aprovar:
+
+1. `DOMINIO=https://g5esportes.com npm run deploy:imagem` — o endereço público
+   é embutido na imagem no build, então **precisa** reconstruir; trocar só o
+   `.env` não corrige canonical, sitemap nem og:image.
+2. No servidor, acrescentar `g5esportes.com www.g5esportes.com` ao `server_name`
+   do vhost, `nginx -t && systemctl reload nginx`, e emitir o certificado:
+   `certbot --nginx -d g5esportes.com -d www.g5esportes.com`.
+3. O DNS de `g5esportes.com` está nos nameservers do WordPress.com
+   (`ns1/ns2/ns3.wordpress.com`) — é lá que o registro A precisa apontar para
+   `2.25.182.14`. Considere migrar o domínio para a Cloudflare antes, junto com
+   `prattsolutions.com.br`, para ter controle do DNS num lugar só.
+4. `ALVO=https://g5esportes.com TODOS=1 npm run check:redirects`
+5. Enviar o sitemap (`/sitemap.xml`) no Search Console.
+
+O WordPress.com continua intacto até o passo 3 — voltar atrás é reverter o DNS.
+
+## Para quem vai publicar conteúdo
+
+O painel fica em `/admin`, todo em português.
+
+- **Posts** — o blog. Salve como rascunho, use *Visualizar* para ver como fica
+  no site e publique quando estiver pronto. Dá para agendar a publicação.
+- **Calendário de provas** — cadastre a prova uma vez; ela aparece na página
+  `/corridas`, na home e nos blocos de página.
+- **Páginas** — montadas por blocos (destaque, texto, cards, planos, chamada,
+  perguntas frequentes…). Arraste para reordenar.
+- **Configurações do site** — contato, WhatsApp, horários, redes sociais e o
+  destaque da página inicial.
+- **Menu de navegação** — o menu do topo e as colunas do rodapé.
+
+Cuidado com o campo **Endereço (slug)**: mudá-lo depois de publicado quebra o
+link antigo.

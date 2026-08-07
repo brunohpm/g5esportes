@@ -1,43 +1,105 @@
-version: '3'
+# Deploy no VPS compartilhado (2.25.182.14 / "Shadowfax").
+#
+# Este servidor JÁ hospeda formiz, metodoaxion e casadoauau atrás de um nginx
+# que é dono das portas 80 e 443. Por isso aqui NÃO existe Caddy: a aplicação
+# escuta só em 127.0.0.1:3001 e quem termina TLS e roteia é aquele nginx, com
+# um vhost novo (deploy/nginx-g5esportes.conf) e certificado do certbot —
+# exatamente o mesmo padrão dos outros três sites.
+#
+# A imagem NÃO é construída aqui: `npm run build` autoriza heap de 8 GB e esta
+# máquina tem 7,8 GB sem swap, então um build local levaria o OOM killer a
+# sortear um processo — possivelmente o Postgres de outro cliente. A imagem é
+# construída na máquina de desenvolvimento e transferida pronta. Por isso este
+# arquivo tem só `image:` e nenhum `build:`: rebuildar aqui é impossível.
+#
+#   # na máquina de desenvolvimento
+#   npm run deploy:imagem
+#
+#   # no servidor
+#   cd /opt/g5esportes
+#   cp .env.producao.example .env && nano .env
+#   docker compose up -d          # SEM --build
+#
+# Portas já ocupadas no host: 3000 (formiz-waha), 4000 (formiz-api),
+# 4200 (metodoaxion), 8000 (casadoauau). Usamos a 3001.
+#
+# NUNCA rode `docker system prune -a` nesta máquina: ela apagaria as imagens
+# dos outros clientes e esta aqui (que veio por `docker load` e não pode ser
+# baixada de volta). Para liberar espaço: `docker builder prune -f`.
+
+# Fixa o nome do projeto para não depender do diretório de onde o comando roda.
+name: g5esportes
 
 services:
-  payload:
-    image: node:20-alpine
-    ports:
-      - '3000:3000'
-    volumes:
-      - .:/home/node/app
-      - node_modules:/home/node/app/node_modules
-    working_dir: /home/node/app/
-    command: sh -c "corepack enable && corepack prepare pnpm@latest --activate && pnpm install && pnpm dev"
+  app:
+    image: g5esportes:latest
+    container_name: g5-app
+    restart: unless-stopped
     depends_on:
-      - mongo
-      # - postgres
-    env_file:
-      - .env
-
-  # Ensure your DATABASE_URL uses 'mongo' as the hostname ie. mongodb://mongo/my-db-name
-  mongo:
-    image: mongo:latest
-    ports:
-      - '27017:27017'
-    command:
-      - --storageEngine=wiredTiger
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgres://g5:${POSTGRES_PASSWORD}@postgres:5432/g5esportes
+      PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+      NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL}
+      # Caminho explícito dos uploads, para não depender de como o bundler
+      # do Next resolve `import.meta.url` no build standalone.
+      MEDIA_DIR: /app/media
     volumes:
-      - data:/data/db
+      # Uploads fora do container: sobrevivem a rebuild e entram no backup.
+      - ./media:/app/media
+      # Cache do otimizador de imagens. Num volume, ele não incha a camada
+      # gravável do container nem some a cada recriação.
+      - next_cache:/app/.next/cache
+    # Só o loopback: nada deste serviço fica exposto na internet diretamente.
+    ports:
+      - '127.0.0.1:3001:3000'
+    # Teto de memória: sem swap no host, um pico sem limite faria o OOM killer
+    # escolher a vítima por conta própria — podendo ser o container de outro
+    # cliente. Com cgroup, o estouro mata só este, que reinicia sozinho.
+    mem_limit: 1500m
+    memswap_limit: 1500m
+    cpus: 1.5
     logging:
-      driver: none
+      # Sem isto o log cresce sem fim no mesmo disco dos outros três sites.
+      # Definido por serviço de propósito: mexer em /etc/docker/daemon.json
+      # exigiria reiniciar o Docker e derrubaria os vizinhos junto.
+      driver: json-file
+      options: { max-size: '10m', max-file: '3' }
+    networks:
+      - g5
 
-  # Uncomment the following to use postgres
-  # postgres:
-  #   restart: always
-  #   image: postgres:latest
-  #   volumes:
-  #     - pgdata:/var/lib/postgresql/data
-  #   ports:
-  #     - "5432:5432"
+  postgres:
+    image: postgres:16-alpine
+    container_name: g5-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: g5
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: g5esportes
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U g5 -d g5esportes']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    # Sem `ports`: o banco só existe dentro da rede deste compose.
+    mem_limit: 512m
+    memswap_limit: 512m
+    cpus: 1.0
+    logging:
+      driver: json-file
+      options: { max-size: '10m', max-file: '3' }
+    networks:
+      - g5
 
 volumes:
-  data:
-  # pgdata:
-  node_modules:
+  pgdata:
+    name: g5esportes_pgdata
+  next_cache:
+    name: g5esportes_next_cache
+
+networks:
+  g5:
+    name: g5esportes_interna
