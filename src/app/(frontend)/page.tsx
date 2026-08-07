@@ -94,7 +94,7 @@ export default async function Home() {
             Curitiba · Parque Bacacheri
           </p>
 
-          <h1 className="mt-6 max-w-4xl font-display text-6xl font-extrabold uppercase leading-[0.88] tracking-tight sm:text-7xl lg:text-8xl">
+          <h1 className="titulo-display mt-6 max-w-4xl font-display text-4xl font-extrabold uppercase tracking-tight sm:text-6xl lg:text-7xl">
             {cfg.hero?.titulo ?? 'Sua melhor versão começa no primeiro quilômetro'}
           </h1>
 
@@ -155,7 +155,7 @@ export default async function Home() {
                 <span className="grid size-14 place-items-center rounded-2xl bg-g5-100 text-g5-700 transition-colors group-hover:bg-g5-600 group-hover:text-white">
                   <Icone className="size-7" aria-hidden />
                 </span>
-                <h3 className="mt-6 font-display text-3xl font-bold uppercase leading-tight text-g5-950">
+                <h3 className="mt-6 font-display text-2xl font-bold uppercase leading-tight text-g5-950 sm:text-3xl">
                   {titulo}
                 </h3>
                 <p className="mt-3 flex-1 leading-relaxed text-ink-muted">{texto}</p>
@@ -313,7 +313,7 @@ export default async function Home() {
       {/* ── Chamada final ────────────────────────────────────────────────── */}
       <section className="bg-g5-200">
         <Container className="py-20 text-center">
-          <h2 className="mx-auto max-w-4xl font-display text-5xl font-extrabold uppercase leading-[0.92] text-g5-950 sm:text-6xl lg:text-7xl">
+          <h2 className="titulo-display mx-auto max-w-4xl font-display text-3xl font-extrabold uppercase text-g5-950 sm:text-5xl lg:text-6xl">
             {cfg.slogan ?? 'Você sonha, a G5 prescreve e juntos nós alcançamos!'}
           </h2>
           <div className="mt-10 flex flex-wrap justify-center gap-4">

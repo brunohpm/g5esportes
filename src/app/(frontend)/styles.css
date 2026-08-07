@@ -56,8 +56,15 @@
   h3,
   h4 {
     font-family: var(--font-display);
-    letter-spacing: -0.02em;
+    letter-spacing: -0.015em;
     text-wrap: balance;
+    /*
+     * Trava de segurança: em português os títulos têm palavras longas
+     * ("EMAGRECIMENTO", "QUILÔMETRO") e a Montserrat é larga. Sem isto, uma
+     * palavra sozinha empurra o bloco além da tela num aparelho de 344px e a
+     * página inteira passa a rolar de lado.
+     */
+    overflow-wrap: break-word;
   }
 
   p {
@@ -74,6 +81,24 @@
     background: var(--color-g5-200);
     color: var(--color-g5-950);
   }
+}
+
+/*
+ * Entrelinha mínima dos títulos em caixa alta.
+ *
+ * NÃO diminua abaixo de 1. Em português a caixa alta é cheia de Ã Õ Ô É Ç:
+ * o til e o circunflexo sobem acima da altura de maiúscula e a cedilha desce
+ * abaixo da linha de base. Com entrelinha menor que 1 eles invadem a linha
+ * vizinha — "VERSÃO" batia no "MELHOR" de cima e a cedilha de "COMEÇA"
+ * entrava no "PRIMEIRO" de baixo.
+ *
+ * Fica FORA de @layer de propósito: CSS sem camada vence as utilities do
+ * Tailwind na cascata, então esta regra é um piso de verdade. Dentro de
+ * `@layer components` ela era silenciosamente ignorada pelo line-height que
+ * vem junto de `text-4xl` e companhia.
+ */
+.titulo-display {
+  line-height: 1.05;
 }
 
 @layer components {

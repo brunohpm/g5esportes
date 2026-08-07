@@ -35,7 +35,7 @@ export default async function PaginaGaleria() {
           <p className="font-mono text-sm font-semibold uppercase tracking-[0.3em] text-g5-600">
             Registro
           </p>
-          <h1 className="mt-4 font-display text-6xl font-extrabold uppercase leading-[0.9] text-g5-950 sm:text-7xl">
+          <h1 className="titulo-display mt-4 font-display text-4xl font-extrabold uppercase text-g5-950 sm:text-6xl">
             Galeria
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-muted">

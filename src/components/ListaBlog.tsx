@@ -33,7 +33,7 @@ export function ListaBlog({
           <p className="font-mono text-sm font-semibold uppercase tracking-[0.3em] text-g5-600">
             {chapeu}
           </p>
-          <h1 className="mt-4 font-display text-6xl font-extrabold uppercase leading-[0.9] text-g5-950 sm:text-7xl">
+          <h1 className="titulo-display mt-4 font-display text-4xl font-extrabold uppercase text-g5-950 sm:text-6xl">
             {titulo}
           </h1>
           {descricao && (

@@ -53,7 +53,7 @@ async function RenderizarBloco({ bloco, primeiro }: { bloco: Bloco; primeiro: bo
             className={cn('relative py-24 lg:py-32', bloco.alinhamento === 'centro' && 'text-center')}
           >
             <h1 className={cn(
-              'font-display text-5xl font-extrabold uppercase leading-[0.9] sm:text-6xl lg:text-7xl',
+              'titulo-display font-display text-4xl font-extrabold uppercase sm:text-5xl lg:text-6xl',
               bloco.alinhamento === 'centro' ? 'mx-auto max-w-4xl' : 'max-w-4xl',
             )}>
               {bloco.titulo}
@@ -200,7 +200,7 @@ async function RenderizarBloco({ bloco, primeiro }: { bloco: Bloco; primeiro: bo
           <Container className="py-20 text-center">
             <h2
               className={cn(
-                'mx-auto max-w-4xl font-display text-4xl font-extrabold uppercase leading-[0.95] sm:text-5xl lg:text-6xl',
+                'titulo-display mx-auto max-w-4xl font-display text-3xl font-extrabold uppercase sm:text-4xl lg:text-5xl',
                 bloco.fundo === 'lime' ? 'text-g5-950' : 'text-white',
               )}
             >

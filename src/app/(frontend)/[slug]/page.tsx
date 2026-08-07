@@ -42,7 +42,7 @@ export default async function PaginaCms({ params }: { params: Promise<{ slug: st
       {!temHero && (
         <section className="border-b border-line">
           <Container className="py-16 lg:py-20">
-            <h1 className="max-w-4xl font-display text-5xl font-extrabold uppercase leading-[0.92] text-g5-950 sm:text-6xl lg:text-7xl">
+            <h1 className="titulo-display max-w-4xl font-display text-3xl font-extrabold uppercase text-g5-950 sm:text-5xl lg:text-6xl">
               {pagina.titulo}
             </h1>
           </Container>

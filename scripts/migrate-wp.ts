@@ -229,9 +229,38 @@ async function comLimite<T, R>(
 const payload = await getPayload({ config })
 const editorConfig = await editorConfigFactory.default({ config: payload.config })
 
+/**
+ * Caminho antigo -> caminho novo, para reescrever os links que o conteúdo faz
+ * de um post para outro. Preenchido antes de importar (ver `mapearLinks`).
+ */
+const mapaLinks = new Map<string, string>()
+
+/**
+ * O conteúdo do WordPress cita o próprio site pela URL absoluta
+ * ("https://g5esportes.com/2013/04/03/kettlebell-training/"). Deixar assim
+ * manda o visitante para fora do site — hoje para o WordPress antigo, e depois
+ * do corte para uma volta desnecessária pelo redirect. Aqui vira caminho
+ * relativo já apontando para o endereço novo.
+ */
+function reescreverLinksInternos(html: string): string {
+  return html.replace(
+    /(href=")https?:\/\/(?:www\.)?g5esportes\.(?:com|wordpress\.com)([^"]*)(")/gi,
+    (_todo, abre: string, resto: string, fecha: string) => {
+      const [caminho, query] = resto.split('?')
+      const semBarra = caminho.replace(/\/+$/, '') || '/'
+      const destino = mapaLinks.get(semBarra)
+      if (destino) return `${abre}${destino}${fecha}`
+      // Sem correspondência (busca do WP, arquivo solto): ao menos fica
+      // relativo, então acompanha o domínio em que o site estiver.
+      if (query && !caminho) return `${abre}/${fecha}`
+      return `${abre}${semBarra}${fecha}`
+    },
+  )
+}
+
 /** Substitui iframes do YouTube por um marcador de texto que vira bloco depois. */
 function prepararHtml(html: string): string {
-  return (
+  return reescreverLinksInternos(
     html
       .replace(/<iframe[^>]*\bsrc="([^"]+)"[^>]*>[\s\S]*?<\/iframe>/gi, (_m, src: string) => {
         const id = idDoYoutube(src)
@@ -611,6 +640,48 @@ async function main() {
       CATEGORIA_PADRAO
     const id = categoriasNovas.get(destino)
     if (id) deParaCategoria.set(cwp.id, id)
+  }
+
+  /*
+   * Mapa de links ANTES de converter qualquer conteúdo: o texto de um post
+   * cita outros posts e páginas pela URL antiga, e a conversão precisa do
+   * destino novo já resolvido para reescrever o href.
+   */
+  {
+    const slugsVistos = new Set<string>()
+    for (const post of posts) {
+      let slug = slugSeguro(post.slug)
+      if (slugsVistos.has(slug)) slug = `${slug}-${post.id}`
+      slugsVistos.add(slug)
+      mapaLinks.set(caminhoAntigo(post.link).replace(/\/+$/, ''), `/blog/${slug}`)
+    }
+
+    const slugsPagina = new Set<string>()
+    for (const pagina of paginas) {
+      const chave = caminhoAntigo(pagina.link).replace(/\/+$/, '')
+      const fixo = PAGINAS_QUE_VIRAM_REDIRECT[pagina.slug]
+      if (fixo) {
+        mapaLinks.set(chave, fixo)
+        continue
+      }
+      if (pagina.content.rendered.trim().length === 0) {
+        mapaLinks.set(chave, '/')
+        continue
+      }
+      let slug = RENOMEAR_PAGINA[pagina.slug] ?? slugSeguro(pagina.slug)
+      if (slugsPagina.has(slug)) slug = `${slug}-${pagina.id}`
+      slugsPagina.add(slug)
+      mapaLinks.set(chave, `/${slug}`)
+    }
+
+    for (const cwp of categoriasWp) {
+      const destino =
+        CATEGORIAS.find((c) => (c.origens as readonly string[]).includes(cwp.slug))?.slug ??
+        CATEGORIA_PADRAO
+      mapaLinks.set(`/category/${cwp.slug}`, `/blog/categoria/${destino}`)
+    }
+
+    log(`     ${mapaLinks.size} endereços antigos mapeados para reescrever links internos`)
   }
 
   log('\n3/6  Levantando imagens…')

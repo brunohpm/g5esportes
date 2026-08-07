@@ -1,20 +1,26 @@
 import type { Metadata, Viewport } from 'next'
-import { Archivo, Big_Shoulders } from 'next/font/google'
+import { Archivo, Montserrat } from 'next/font/google'
 import { Cabecalho } from '@/components/Cabecalho'
 import { Rodape } from '@/components/Rodape'
 import { BotaoWhatsapp } from '@/components/BotaoWhatsapp'
 import { getConfiguracoes } from '@/lib/payload'
 import './styles.css'
 
-/** Condensada e atlética (tipo placa de pista) — títulos e números grandes. */
-const display = Big_Shoulders({
+/**
+ * Geométrica e pesada, na construção do lettering "G5 ESPORTES" da marca.
+ * Carrega títulos, a assinatura e os botões.
+ */
+const display = Montserrat({
   subsets: ['latin'],
-  weight: ['500', '600', '700', '800'],
+  weight: ['600', '700', '800', '900'],
   variable: '--fonte-display',
   display: 'swap',
 })
 
-/** Grotesca de trabalho, com números tabulares para as tabelas de provas. */
+/**
+ * Grotesca de trabalho para texto corrido. Fica no calendário de provas por
+ * ter algarismos tabulares — é o que mantém as datas alinhadas na coluna.
+ */
 const texto = Archivo({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],

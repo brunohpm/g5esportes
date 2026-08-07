@@ -45,7 +45,7 @@ export default async function PaginaCorridas({
           <p className="font-mono text-sm font-semibold uppercase tracking-[0.3em] text-g5-200">
             Calendário
           </p>
-          <h1 className="mt-4 font-display text-6xl font-extrabold uppercase leading-[0.9] sm:text-7xl lg:text-8xl">
+          <h1 className="titulo-display mt-4 font-display text-4xl font-extrabold uppercase sm:text-6xl lg:text-7xl">
             Provas {ano}
           </h1>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-white/70">

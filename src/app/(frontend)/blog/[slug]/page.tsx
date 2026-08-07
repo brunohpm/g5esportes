@@ -92,7 +92,7 @@ export default async function PaginaPost({ params }: { params: Promise<{ slug: s
             </ul>
           )}
 
-          <h1 className="mt-5 font-display text-5xl font-extrabold uppercase leading-[0.95] text-g5-950 sm:text-6xl">
+          <h1 className="titulo-display mt-5 font-display text-3xl font-extrabold uppercase text-g5-950 sm:text-5xl">
             {post.titulo}
           </h1>
 
@@ -144,7 +144,7 @@ export default async function PaginaPost({ params }: { params: Promise<{ slug: s
 
       <section className="bg-g5-200">
         <Container className="py-16 text-center">
-          <h2 className="mx-auto max-w-3xl font-display text-4xl font-extrabold uppercase leading-[0.95] text-g5-950 sm:text-5xl">
+          <h2 className="titulo-display mx-auto max-w-3xl font-display text-3xl font-extrabold uppercase text-g5-950 sm:text-4xl">
             Bora treinar com a gente?
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-lg text-g5-900/75">

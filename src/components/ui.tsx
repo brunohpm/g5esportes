@@ -94,7 +94,7 @@ export function TituloSecao({
       )}
       <h2
         className={cn(
-          'font-display text-4xl font-extrabold uppercase leading-[0.95] sm:text-5xl lg:text-6xl',
+          'titulo-display font-display text-3xl font-extrabold uppercase sm:text-4xl lg:text-5xl',
           claro ? 'text-white' : 'text-g5-950',
         )}
       >

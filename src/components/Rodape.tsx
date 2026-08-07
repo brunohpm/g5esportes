@@ -1,17 +1,12 @@
 import Link from 'next/link'
-import { Facebook, Instagram, Mail, MapPin, Phone, Youtube } from 'lucide-react'
+import { Mail, MapPin, Phone } from 'lucide-react'
 import { getConfiguracoes, getMenu } from '@/lib/payload'
+import { RedesSociais } from './RedesSociais'
 
 const ANO = new Date().getFullYear()
 
 export async function Rodape() {
   const [menu, cfg] = await Promise.all([getMenu(), getConfiguracoes()])
-
-  const redes = [
-    { url: cfg.instagram, Icone: Instagram, nome: 'Instagram' },
-    { url: cfg.facebook, Icone: Facebook, nome: 'Facebook' },
-    { url: cfg.youtube, Icone: Youtube, nome: 'YouTube' },
-  ].filter((r) => r.url)
 
   return (
     <footer className="mt-24 bg-g5-950 text-white">
@@ -69,23 +64,7 @@ export async function Rodape() {
               )}
             </ul>
 
-            {redes.length > 0 && (
-              <ul className="mt-8 flex gap-3">
-                {redes.map(({ url, Icone, nome }) => (
-                  <li key={nome}>
-                    <a
-                      href={url as string}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="grid size-11 place-items-center rounded-full border border-white/15 transition-colors hover:border-g5-200 hover:bg-g5-200 hover:text-g5-950"
-                    >
-                      <span className="sr-only">{nome}</span>
-                      <Icone className="size-5" aria-hidden />
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            )}
+            <RedesSociais cfg={cfg} className="mt-8" />
           </div>
 
           <div className="grid gap-8 sm:grid-cols-3">

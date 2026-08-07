@@ -78,7 +78,7 @@ export function MenuMobile({ itens, areaAlunoUrl, areaAlunoRotulo }: Props) {
             <li key={item.id ?? item.url} className="border-b border-white/10 last:border-0">
               <Link
                 href={item.url}
-                className="block pb-1 pt-3 font-display text-2xl font-bold uppercase leading-none tracking-wide"
+                className="titulo-display block pb-1 pt-3 font-display text-2xl font-bold uppercase tracking-wide"
               >
                 {item.rotulo}
               </Link>
