@@ -1,6 +1,6 @@
 import Image from 'next/image'
 import { PlayCircle } from 'lucide-react'
-import type { Configuracoe, Midia } from '@/payload-types'
+import type { Configuracoe, Midia, Video } from '@/payload-types'
 import { getProfessores } from '@/lib/payload'
 import { caminhoMidia } from '@/lib/utils'
 import { idDoYoutube } from '@/lib/youtube'
@@ -18,7 +18,11 @@ export async function PalavraTreinadores({ cfg }: { cfg: Configuracoe }) {
   const professores = await getProfessores()
 
   const idVideo = idDoYoutube(dados?.videoUrl ?? '')
-  const temConteudo = dados?.texto || idVideo || professores.length > 0
+  // YouTube tem preferência quando os dois estão preenchidos.
+  const arquivo = !idVideo ? ((dados?.videoArquivo as Video | null | undefined) ?? null) : null
+  const capa = (arquivo?.capa as Midia | null | undefined) ?? null
+
+  const temConteudo = dados?.texto || idVideo || arquivo || professores.length > 0
   if (!temConteudo) return null
 
   return (
@@ -84,6 +88,25 @@ export async function PalavraTreinadores({ cfg }: { cfg: Configuracoe }) {
                   loading="lazy"
                   className="size-full border-0"
                 />
+              </div>
+            ) : arquivo?.url ? (
+              <div className="aspect-video overflow-hidden rounded-3xl bg-g5-950 shadow-erguido">
+                {/*
+                  `preload="metadata"` e não "auto": sem isso o navegador começa
+                  a baixar o vídeo inteiro assim que a home abre, mesmo de quem
+                  nunca vai dar play — e a banda é do VPS, não de um CDN.
+                */}
+                <video
+                  controls
+                  playsInline
+                  preload="metadata"
+                  poster={capa?.url ? (caminhoMidia(capa.url) ?? undefined) : undefined}
+                  aria-label={arquivo.legenda ?? dados?.titulo ?? 'A palavra dos treinadores da G5'}
+                  className="size-full object-cover"
+                >
+                  <source src={caminhoMidia(arquivo.url) ?? arquivo.url} type={arquivo.mimeType ?? 'video/mp4'} />
+                  Seu navegador não consegue exibir este vídeo.
+                </video>
               </div>
             ) : (
               /* Espaço reservado: mostra onde o vídeo entra, sem parecer erro. */

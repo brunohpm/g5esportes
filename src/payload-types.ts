@@ -75,6 +75,7 @@ export interface Config {
     categorias: Categoria;
     tags: Tag;
     midia: Midia;
+    videos: Video;
     usuarios: Usuario;
     'payload-kv': PayloadKv;
     'payload-jobs': PayloadJob;
@@ -92,6 +93,7 @@ export interface Config {
     categorias: CategoriasSelect<false> | CategoriasSelect<true>;
     tags: TagsSelect<false> | TagsSelect<true>;
     midia: MidiaSelect<false> | MidiaSelect<true>;
+    videos: VideosSelect<false> | VideosSelect<true>;
     usuarios: UsuariosSelect<false> | UsuariosSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-jobs': PayloadJobsSelect<false> | PayloadJobsSelect<true>;
@@ -720,6 +722,38 @@ export interface Albun {
   createdAt: string;
 }
 /**
+ * Vídeos guardados no servidor. Para o vídeo institucional, o YouTube costuma ser melhor — não gasta banda do servidor e ajusta a qualidade à conexão de quem assiste.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos".
+ */
+export interface Video {
+  id: number;
+  /**
+   * Só para você encontrar depois; não aparece no site.
+   */
+  titulo: string;
+  /**
+   * Resuma o que acontece no vídeo, para quem usa leitor de tela.
+   */
+  legenda?: string | null;
+  /**
+   * Aparece antes de o vídeo tocar. Sem ela o navegador mostra um quadro preto — vale sempre colocar.
+   */
+  capa?: (number | null) | Midia;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
@@ -866,6 +900,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'midia';
         value: number | Midia;
+      } | null)
+    | ({
+        relationTo: 'videos';
+        value: number | Video;
       } | null)
     | ({
         relationTo: 'usuarios';
@@ -1264,6 +1302,26 @@ export interface MidiaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "videos_select".
+ */
+export interface VideosSelect<T extends boolean = true> {
+  titulo?: T;
+  legenda?: T;
+  capa?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "usuarios_select".
  */
 export interface UsuariosSelect<T extends boolean = true> {
@@ -1407,9 +1465,13 @@ export interface Configuracoe {
      */
     texto?: string | null;
     /**
-     * Cole o endereço. Deixe vazio até gravar — a seção se adapta.
+     * Cole o endereço do YouTube. Recomendado para o vídeo institucional: não gasta banda do servidor e a qualidade se adapta à conexão de quem assiste.
      */
     videoUrl?: string | null;
+    /**
+     * Alternativa ao YouTube, para vídeo que não deva ficar público lá. Se os dois estiverem preenchidos, o YouTube tem preferência. Até 300 MB.
+     */
+    videoArquivo?: (number | null) | Video;
   };
   /**
    * Destaca a planilha online e os treinos no relógio.
@@ -1546,6 +1608,7 @@ export interface ConfiguracoesSelect<T extends boolean = true> {
         titulo?: T;
         texto?: T;
         videoUrl?: T;
+        videoArquivo?: T;
       };
   plataforma?:
     | T

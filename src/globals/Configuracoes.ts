@@ -112,7 +112,21 @@ export const Configuracoes: GlobalConfig = {
                   name: 'videoUrl',
                   type: 'text',
                   label: 'Vídeo do YouTube',
-                  admin: { description: 'Cole o endereço. Deixe vazio até gravar — a seção se adapta.' },
+                  admin: {
+                    description:
+                      'Cole o endereço do YouTube. Recomendado para o vídeo institucional: não gasta banda do servidor e a qualidade se adapta à conexão de quem assiste.',
+                  },
+                },
+                {
+                  name: 'videoArquivo',
+                  type: 'upload',
+                  relationTo: 'videos',
+                  label: 'Ou envie um arquivo de vídeo',
+                  admin: {
+                    description:
+                      'Alternativa ao YouTube, para vídeo que não deva ficar público lá. Se os dois estiverem preenchidos, o YouTube tem preferência. Até 300 MB.',
+                    condition: (_, irmaos) => !irmaos?.videoUrl,
+                  },
                 },
               ],
             },

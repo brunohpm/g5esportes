@@ -16,6 +16,7 @@ import sharp from 'sharp'
 
 import { Usuarios } from './collections/Usuarios'
 import { Midia } from './collections/Midia'
+import { Videos } from './collections/Videos'
 import { Posts } from './collections/Posts'
 import { Paginas } from './collections/Paginas'
 import { Provas } from './collections/Provas'
@@ -50,7 +51,7 @@ export default buildConfig({
       ],
     },
   },
-  collections: [Posts, Paginas, Provas, Professores, Albuns, Categorias, Tags, Midia, Usuarios],
+  collections: [Posts, Paginas, Provas, Professores, Albuns, Categorias, Tags, Midia, Videos, Usuarios],
   globals: [Configuracoes, Menu],
   // Painel inteiro em português.
   i18n: {
