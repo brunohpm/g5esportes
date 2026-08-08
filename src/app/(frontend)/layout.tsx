@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
-import { Archivo, Montserrat } from 'next/font/google'
+import { Archivo } from 'next/font/google'
+import localFont from 'next/font/local'
 import { Cabecalho } from '@/components/Cabecalho'
 import { Rodape } from '@/components/Rodape'
 import { BotaoWhatsapp } from '@/components/BotaoWhatsapp'
@@ -7,14 +8,34 @@ import { getConfiguracoes } from '@/lib/payload'
 import './styles.css'
 
 /**
- * Geométrica e pesada, na construção do lettering "G5 ESPORTES" da marca.
- * Carrega títulos, a assinatura e os botões.
+ * Hanson Bold — os títulos. Tem a acentuação completa do português, que é o
+ * que mais importa num título em caixa alta.
+ *
+ * Não tem — … [ ] { } $ º ª °. Isso é tratado na cadeia de fallback do
+ * styles.css: o navegador substitui GLIFO A GLIFO, então "R$ 145" sai com o
+ * cifrão em Archivo e o resto em Hanson, sem quebrar.
  */
-const display = Montserrat({
-  subsets: ['latin'],
-  weight: ['600', '700', '800', '900'],
+const display = localFont({
+  src: [{ path: '../../fontes/Hanson-Bold.otf', weight: '700', style: 'normal' }],
   variable: '--fonte-display',
   display: 'swap',
+  // Ajusta a métrica do fallback para reduzir o pulo de layout na troca.
+  adjustFontFallback: false,
+})
+
+/**
+ * Conthrax SemiBold — a fonte da marca. Carrega a assinatura "G5 ESPORTES",
+ * os rótulos de seção e os botões. Acentuação completa (testada em
+ * scripts/testar-fontes.mjs).
+ *
+ * É desenho de display: ótima em caixa alta e pouco texto, ruim em parágrafo.
+ * Por isso não entra no corpo.
+ */
+const marca = localFont({
+  src: [{ path: '../../fontes/Conthrax-SemiBold.otf', weight: '600', style: 'normal' }],
+  variable: '--fonte-marca',
+  display: 'swap',
+  adjustFontFallback: false,
 })
 
 /**
@@ -54,7 +75,7 @@ export const viewport: Viewport = {
 
 export default async function LayoutSite({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="pt-BR" className={`${display.variable} ${texto.variable}`}>
+    <html lang="pt-BR" className={`${display.variable} ${marca.variable} ${texto.variable}`}>
       <body className="flex min-h-dvh flex-col">
         <a
           href="#conteudo"

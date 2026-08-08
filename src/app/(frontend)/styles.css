@@ -27,7 +27,13 @@
   --color-mist: #f4faf2;
   --color-line: #dfe7dc;
 
-  --font-display: var(--fonte-display), ui-sans-serif, system-ui, sans-serif;
+  /*
+   * A Archivo entra logo depois da Hanson na cadeia: o navegador troca glifo a
+   * glifo, então os caracteres que faltam na Hanson (— … [ ] { } $ º ª °)
+   * caem nela em vez de virar caixinha vazia.
+   */
+  --font-display: var(--fonte-display), var(--fonte-texto), ui-sans-serif, system-ui, sans-serif;
+  --font-marca: var(--fonte-marca), var(--fonte-texto), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--fonte-texto), ui-sans-serif, system-ui, sans-serif;
 
   --radius-card: 1rem;
@@ -60,11 +66,17 @@
     text-wrap: balance;
     /*
      * Trava de segurança: em português os títulos têm palavras longas
-     * ("EMAGRECIMENTO", "QUILÔMETRO") e a Montserrat é larga. Sem isto, uma
-     * palavra sozinha empurra o bloco além da tela num aparelho de 344px e a
-     * página inteira passa a rolar de lado.
+     * ("EMAGRECIMENTO", "QUILÔMETRO") e as fontes de display são largas. Sem
+     * isto, uma palavra sozinha empurra o bloco além da tela num aparelho de
+     * 344px e a página inteira passa a rolar de lado.
+     *
+     * `anywhere` e não `break-word`: as duas quebram a palavra na linha, mas
+     * só `anywhere` reduz a LARGURA MÍNIMA do elemento. Um item de grid tem
+     * `min-width: auto` e se recusa a encolher abaixo do min-content — com
+     * `break-word` o card continuava reivindicando a largura da maior palavra
+     * e estourava a tela mesmo com a quebra permitida.
      */
-    overflow-wrap: break-word;
+    overflow-wrap: anywhere;
   }
 
   p {

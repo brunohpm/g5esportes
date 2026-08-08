@@ -42,7 +42,7 @@ export default async function PaginaCorridas({
     <>
       <section className="bg-g5-950 text-white">
         <Container className="py-16 lg:py-24">
-          <p className="font-mono text-sm font-semibold uppercase tracking-[0.3em] text-g5-200">
+          <p className="font-marca text-xs font-semibold uppercase tracking-[0.25em] text-g5-200">
             Calendário
           </p>
           <h1 className="titulo-display mt-4 font-display text-4xl font-extrabold uppercase sm:text-6xl lg:text-7xl">

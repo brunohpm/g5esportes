@@ -42,7 +42,7 @@ const ESTILOS: Record<NonNullable<BotaoProps['estilo']>, string> = {
 
 export function Botao({ href, children, estilo = 'primario', className, externo }: BotaoProps) {
   const classes = cn(
-    'inline-flex items-center justify-center gap-2 rounded-full font-display text-lg font-bold uppercase tracking-wide transition-all active:scale-95',
+    'inline-flex items-center justify-center gap-2 rounded-full font-marca text-sm font-semibold uppercase tracking-[0.08em] transition-all active:scale-95',
     estilo !== 'texto' && 'px-7 py-3.5',
     ESTILOS[estilo],
     className,
@@ -85,7 +85,7 @@ export function TituloSecao({
       {numero && (
         <span
           className={cn(
-            'mb-3 inline-block font-mono text-sm font-semibold tracking-[0.3em]',
+            'mb-3 inline-block font-marca text-xs font-semibold tracking-[0.25em]',
             claro ? 'text-g5-200' : 'text-g5-600',
           )}
         >
@@ -128,7 +128,7 @@ export function Etiqueta({
   return (
     <span
       className={cn(
-        'inline-flex items-center rounded-full px-3 py-1 font-display text-sm font-bold uppercase tracking-wider',
+        'inline-flex items-center rounded-full px-3 py-1 font-marca text-xs font-semibold uppercase tracking-[0.08em]',
         cores[cor ?? 'green'] ?? cores.green,
         className,
       )}

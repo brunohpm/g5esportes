@@ -83,6 +83,43 @@ async function seedConfiguracoes() {
         { valor: String(totalProvas), rotulo: 'provas no calendário' },
         { valor: '2', rotulo: 'turmas por dia: manhã e noite' },
       ],
+      palavraTreinadores: {
+        titulo: 'A palavra de quem conduz',
+        texto:
+          'Quem prescreve o seu treino tem nome, rosto e registro no CREF. Antes de qualquer planilha, vem a conversa: o que você quer, de onde está partindo e quanto tempo tem na semana.',
+      },
+      plataforma: {
+        titulo: 'Sua planilha no bolso',
+        texto:
+          'O treino não fica num papel nem num print de WhatsApp. Ele vive numa plataforma que acompanha a sua semana — e, se você tem relógio, sai do celular direto para o pulso.',
+        recursos: [
+          {
+            icone: 'planilha',
+            titulo: 'Planilha individual',
+            texto:
+              'Montada para o seu objetivo e a sua rotina, revisada ciclo a ciclo pelo treinador.',
+          },
+          {
+            icone: 'relogio',
+            titulo: 'Treino pronto no Garmin',
+            texto:
+              'A sessão do dia é enviada para o relógio: é só dar start e seguir os avisos de ritmo e volta.',
+          },
+          {
+            icone: 'celular',
+            titulo: 'Tudo pelo celular',
+            texto: 'Planilha, histórico e avisos na palma da mão, em qualquer lugar.',
+          },
+          {
+            icone: 'evolucao',
+            titulo: 'Evolução registrada',
+            texto: 'Cada treino fica gravado. Dá para olhar para trás e ver o quanto você andou.',
+          },
+        ],
+      },
+      fotos: {
+        titulo: 'A G5 na pista',
+      },
       nomeSite: 'G5 Esportes',
       slogan: 'Você sonha, a G5 prescreve e juntos nós alcançamos!',
       descricao:

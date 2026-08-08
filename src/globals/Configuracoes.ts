@@ -92,6 +92,88 @@ export const Configuracoes: GlobalConfig = {
                 },
               ],
             },
+            {
+              name: 'palavraTreinadores',
+              type: 'group',
+              label: 'Palavra dos treinadores',
+              admin: {
+                description:
+                  'Aparece logo abaixo do destaque do topo. Sem vídeo, a seção mostra o texto ao lado dos professores cadastrados — nunca fica quebrada.',
+              },
+              fields: [
+                { name: 'titulo', type: 'text', label: 'Título', defaultValue: 'A palavra de quem conduz' },
+                {
+                  name: 'texto',
+                  type: 'textarea',
+                  label: 'Texto',
+                  admin: { description: 'Duas ou três frases. O vídeo é quem fala; aqui é só o convite.' },
+                },
+                {
+                  name: 'videoUrl',
+                  type: 'text',
+                  label: 'Vídeo do YouTube',
+                  admin: { description: 'Cole o endereço. Deixe vazio até gravar — a seção se adapta.' },
+                },
+              ],
+            },
+            {
+              name: 'plataforma',
+              type: 'group',
+              label: 'Plataforma de treinos',
+              admin: { description: 'Destaca a planilha online e os treinos no relógio.' },
+              fields: [
+                { name: 'titulo', type: 'text', label: 'Título', defaultValue: 'Sua planilha no bolso' },
+                { name: 'texto', type: 'textarea', label: 'Texto de apoio' },
+                {
+                  name: 'recursos',
+                  type: 'array',
+                  label: 'Recursos',
+                  maxRows: 4,
+                  fields: [
+                    {
+                      name: 'icone',
+                      type: 'select',
+                      label: 'Ícone',
+                      defaultValue: 'planilha',
+                      options: [
+                        { label: 'Planilha', value: 'planilha' },
+                        { label: 'Relógio / Garmin', value: 'relogio' },
+                        { label: 'Celular', value: 'celular' },
+                        { label: 'Gráfico de evolução', value: 'evolucao' },
+                        { label: 'Conversa com o treinador', value: 'conversa' },
+                        { label: 'Calendário', value: 'calendario' },
+                      ],
+                    },
+                    { name: 'titulo', type: 'text', label: 'Título', required: true },
+                    { name: 'texto', type: 'textarea', label: 'Descrição' },
+                  ],
+                },
+                {
+                  name: 'imagem',
+                  type: 'upload',
+                  relationTo: 'midia',
+                  label: 'Imagem ao lado',
+                  admin: { description: 'Print da plataforma ou foto de alguém olhando o relógio.' },
+                },
+              ],
+            },
+            {
+              name: 'fotos',
+              type: 'group',
+              label: 'Faixa de fotos',
+              admin: { description: 'Uma tira de fotos do grupo, entre as seções da home.' },
+              fields: [
+                { name: 'titulo', type: 'text', label: 'Título', defaultValue: 'A G5 na pista' },
+                {
+                  name: 'imagens',
+                  type: 'upload',
+                  relationTo: 'midia',
+                  hasMany: true,
+                  label: 'Fotos',
+                  admin: { description: 'De 3 a 8 fotos. Horizontais funcionam melhor.' },
+                },
+              ],
+            },
           ],
         },
         {

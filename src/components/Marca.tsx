@@ -3,12 +3,14 @@ import type { Configuracoe, Midia } from '@/payload-types'
 import { caminhoMidia, cn } from '@/lib/utils'
 
 /**
- * A assinatura da G5, empilhada como na arte da marca: "G5" grande com
- * "ESPORTES" espaçado embaixo.
+ * A assinatura da G5, empilhada: "G5" grande com "ESPORTES" espaçado embaixo.
  *
- * Se houver logo enviado em Configurações do site, ele substitui o lettering —
- * é o caminho para usar a Conthrax de verdade, já que a licença gratuita dela
- * cobre gerar a arte, mas não embutir a fonte no site.
+ * O lettering sai em Conthrax, que é a fonte da marca. Mas o "G5" do logo
+ * oficial NÃO é tipografia — é um desenho próprio, com o G em curva aberta e o
+ * 5 fundido nele. Nenhuma fonte reproduz isso.
+ *
+ * Por isso: assim que o arquivo do logo for enviado em Configurações do site,
+ * ele substitui este lettering. O texto aqui é só o que segura enquanto isso.
  */
 export function Marca({
   cfg,
@@ -33,37 +35,35 @@ export function Marca({
         className={cn(
           'w-auto',
           tamanho === 'compacto' && 'h-10',
-          tamanho === 'normal' && 'h-12',
-          tamanho === 'grande' && 'h-16',
+          tamanho === 'normal' && 'h-12 sm:h-14',
+          tamanho === 'grande' && 'h-20',
           className,
         )}
       />
     )
   }
 
-  /*
-   * O lockup é quase quadrado (164x139), então numa barra horizontal ele só
-   * ganha presença se usar quase toda a altura disponível do cabeçalho.
-   */
-  const alturas = {
-    compacto: 'h-10',
-    normal: 'h-13 sm:h-15',
-    grande: 'h-20',
+  const escalas = {
+    compacto: { g5: 'text-2xl', esportes: 'text-[0.5rem]' },
+    normal: { g5: 'text-3xl sm:text-4xl', esportes: 'text-[0.55rem] sm:text-[0.62rem]' },
+    grande: { g5: 'text-5xl', esportes: 'text-[0.8rem]' },
   }[tamanho]
 
-  /*
-   * Assinatura desenhada em vetor (scripts/gerar-logo.mjs). É <img> comum e
-   * não next/image de propósito: SVG já é resolução-independente e leve
-   * (2,8 KB), então otimizar não traz nada — e `images.localPatterns` do
-   * next.config restringe o otimizador aos uploads do Payload.
-   */
   return (
-    <img
-      src="/marca-g5.svg"
-      alt={nome}
-      width={164}
-      height={139}
-      className={cn('w-auto', alturas, className)}
-    />
+    <span className={cn('block text-center font-marca leading-none', className)}>
+      <span className={cn('block font-semibold tracking-tight text-g5-200', escalas.g5)}>G5</span>
+      {/*
+        O tracking à direita empurra o bloco meio caractere; a margem esquerda
+        compensa e mantém "ESPORTES" centrado sob o "G5".
+      */}
+      <span
+        className={cn(
+          'ml-[0.3em] mt-1 block font-semibold uppercase tracking-[0.3em] text-white/75',
+          escalas.esportes,
+        )}
+      >
+        Esportes
+      </span>
+    </span>
   )
 }

@@ -1397,6 +1397,49 @@ export interface Configuracoe {
         id?: string | null;
       }[]
     | null;
+  /**
+   * Aparece logo abaixo do destaque do topo. Sem vídeo, a seção mostra o texto ao lado dos professores cadastrados — nunca fica quebrada.
+   */
+  palavraTreinadores?: {
+    titulo?: string | null;
+    /**
+     * Duas ou três frases. O vídeo é quem fala; aqui é só o convite.
+     */
+    texto?: string | null;
+    /**
+     * Cole o endereço. Deixe vazio até gravar — a seção se adapta.
+     */
+    videoUrl?: string | null;
+  };
+  /**
+   * Destaca a planilha online e os treinos no relógio.
+   */
+  plataforma?: {
+    titulo?: string | null;
+    texto?: string | null;
+    recursos?:
+      | {
+          icone?: ('planilha' | 'relogio' | 'celular' | 'evolucao' | 'conversa' | 'calendario') | null;
+          titulo: string;
+          texto?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Print da plataforma ou foto de alguém olhando o relógio.
+     */
+    imagem?: (number | null) | Midia;
+  };
+  /**
+   * Uma tira de fotos do grupo, entre as seções da home.
+   */
+  fotos?: {
+    titulo?: string | null;
+    /**
+     * De 3 a 8 fotos. Horizontais funcionam melhor.
+     */
+    imagens?: (number | Midia)[] | null;
+  };
   email?: string | null;
   /**
    * Só números, com país e DDD. Ex.: 5541984680986
@@ -1496,6 +1539,34 @@ export interface ConfiguracoesSelect<T extends boolean = true> {
         valor?: T;
         rotulo?: T;
         id?: T;
+      };
+  palavraTreinadores?:
+    | T
+    | {
+        titulo?: T;
+        texto?: T;
+        videoUrl?: T;
+      };
+  plataforma?:
+    | T
+    | {
+        titulo?: T;
+        texto?: T;
+        recursos?:
+          | T
+          | {
+              icone?: T;
+              titulo?: T;
+              texto?: T;
+              id?: T;
+            };
+        imagem?: T;
+      };
+  fotos?:
+    | T
+    | {
+        titulo?: T;
+        imagens?: T;
       };
   email?: T;
   whatsapp?: T;

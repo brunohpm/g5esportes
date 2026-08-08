@@ -3,6 +3,9 @@ import Link from 'next/link'
 import { ArrowRight, CalendarDays, Clock, HeartPulse, MapPin, Target, TrendingDown } from 'lucide-react'
 import { Botao, Container, TituloSecao } from '@/components/ui'
 import { CartaoPost } from '@/components/CartaoPost'
+import { PalavraTreinadores } from '@/components/home/PalavraTreinadores'
+import { Plataforma } from '@/components/home/Plataforma'
+import { FaixaFotos } from '@/components/home/FaixaFotos'
 import { getConfiguracoes, getPosts, getProximasProvas } from '@/lib/payload'
 import type { Midia } from '@/payload-types'
 import { caminhoMidia, formatarDataCurta } from '@/lib/utils'
@@ -90,7 +93,7 @@ export default async function Home() {
         )}
 
         <Container className="relative py-24 lg:py-36">
-          <p className="font-mono text-sm font-semibold uppercase tracking-[0.3em] text-g5-200">
+          <p className="font-marca text-xs font-semibold uppercase tracking-[0.25em] text-g5-200">
             Curitiba · Parque Bacacheri
           </p>
 
@@ -136,6 +139,9 @@ export default async function Home() {
         </Container>
       </section>
 
+      {/* ── Palavra dos treinadores ──────────────────────────────────────── */}
+      <PalavraTreinadores cfg={cfg} />
+
       {/* ── Objetivos ────────────────────────────────────────────────────── */}
       <section className="py-24">
         <Container>
@@ -155,7 +161,9 @@ export default async function Home() {
                 <span className="grid size-14 place-items-center rounded-2xl bg-g5-100 text-g5-700 transition-colors group-hover:bg-g5-600 group-hover:text-white">
                   <Icone className="size-7" aria-hidden />
                 </span>
-                <h3 className="mt-6 font-display text-2xl font-bold uppercase leading-tight text-g5-950 sm:text-3xl">
+                {/* text-2xl e não 3xl: a Hanson é larga e "EMAGRECIMENTO"
+                    quebrava no meio dentro do card de três colunas. */}
+                <h3 className="mt-6 font-display text-2xl font-bold uppercase leading-tight text-g5-950">
                   {titulo}
                 </h3>
                 <p className="mt-3 flex-1 leading-relaxed text-ink-muted">{texto}</p>
@@ -202,6 +210,12 @@ export default async function Home() {
           </div>
         </Container>
       </section>
+
+      {/* ── Plataforma: planilha online e treino no relógio ──────────────── */}
+      <Plataforma cfg={cfg} />
+
+      {/* ── Fotos do grupo ───────────────────────────────────────────────── */}
+      <FaixaFotos cfg={cfg} />
 
       {/* ── Próximas provas ──────────────────────────────────────────────── */}
       {provas.length > 0 && (

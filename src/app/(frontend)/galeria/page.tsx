@@ -32,7 +32,7 @@ export default async function PaginaGaleria() {
     <>
       <section className="border-b border-line">
         <Container className="py-16 lg:py-20">
-          <p className="font-mono text-sm font-semibold uppercase tracking-[0.3em] text-g5-600">
+          <p className="font-marca text-xs font-semibold uppercase tracking-[0.25em] text-g5-600">
             Registro
           </p>
           <h1 className="titulo-display mt-4 font-display text-4xl font-extrabold uppercase text-g5-950 sm:text-6xl">
