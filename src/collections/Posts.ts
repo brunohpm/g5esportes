@@ -26,7 +26,15 @@ export const Posts: CollectionConfig = {
   },
   versions: {
     drafts: {
-      autosave: { interval: 800 },
+      /*
+       * 2s, e não 800ms: com o intervalo muito curto, qualquer toque no
+       * formulário de criação grava um rascunho. Se a pessoa sair sem
+       * preencher, sobra uma versão sem documento pai — ela aparece na lista
+       * como "<Nenhum(a) Título>" e NÃO dá para apagar pelo painel, porque
+       * deletar exige o ID do documento, que não existe. Só pelo banco
+       * (ver deploy/limpar-orfaos.sh).
+       */
+      autosave: { interval: 2000 },
       schedulePublish: true,
     },
     maxPerDoc: 20,
