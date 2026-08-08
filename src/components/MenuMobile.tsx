@@ -47,7 +47,7 @@ export function MenuMobile({ itens, areaAlunoUrl, areaAlunoRotulo }: Props) {
   const painel = (
     <div
       id="menu-mobile"
-      className="fixed inset-0 z-100 flex flex-col bg-g5-950 text-white lg:hidden"
+      className="fixed inset-0 z-100 flex flex-col bg-g5-950 text-white xl:hidden"
       style={{
         // Respeita o notch e a barra de gestos do iPhone.
         paddingTop: 'env(safe-area-inset-top)',
@@ -111,7 +111,7 @@ export function MenuMobile({ itens, areaAlunoUrl, areaAlunoRotulo }: Props) {
   )
 
   return (
-    <div className="ml-auto lg:hidden">
+    <div className="ml-auto lg:ml-2 xl:hidden">
       <button
         type="button"
         onClick={() => setAberto((v) => !v)}

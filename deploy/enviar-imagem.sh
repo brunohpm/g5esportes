@@ -34,6 +34,12 @@ docker save "g5esportes:$VERSAO" g5esportes:latest \
   | gzip -1 \
   | ssh "$ALVO" 'gunzip | docker load'
 
+# Schema ANTES da imagem: o Payload não cria tabela em produção, então código
+# novo contra banco velho derruba o site. O script aborta se faltar migração,
+# e como isso roda antes do swap da imagem, a versão atual continua no ar.
+echo "» migrações e conferência de schema"
+ALVO="$ALVO" DESTINO="$DESTINO" bash "$(dirname "$0")/migrar.sh"
+
 echo "» subindo a versão nova"
 ssh "$ALVO" "cd $DESTINO && docker compose up -d && docker compose ps"
 

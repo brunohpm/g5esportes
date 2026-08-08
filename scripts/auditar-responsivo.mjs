@@ -29,7 +29,16 @@ const APARELHOS = [
   { nome: 'iPhone 15 Pro Max',     largura: 430, altura: 932, dpr: 3 },
   { nome: 'iPad mini',             largura: 768, altura: 1024, dpr: 2 },
   { nome: 'iPad Pro 11',           largura: 834, altura: 1194, dpr: 2 },
-  { nome: 'Notebook',              largura: 1440, altura: 900, dpr: 1 },
+  /*
+   * De 1024 a 1400 é onde o menu de desktop aparece pela primeira vez, ainda
+   * sem folga: o logo, as redes, cinco itens e o botão da Área do Aluno
+   * disputam a mesma barra. Faltava essa faixa aqui — foi nela que "A G5"
+   * quebrou em duas linhas sem a auditoria acusar.
+   */
+  { nome: 'Notebook pequeno',      largura: 1024, altura: 768, dpr: 2 },
+  { nome: 'Notebook 13"',          largura: 1280, altura: 800, dpr: 2 },
+  { nome: 'Notebook 15"',          largura: 1440, altura: 900, dpr: 1 },
+  { nome: 'Monitor',               largura: 1920, altura: 1080, dpr: 1 },
 ]
 
 const PAGINAS = [
@@ -59,6 +68,22 @@ function medir() {
     const cls = (el.className && typeof el.className === 'string' ? el.className : '').split(/\s+/).slice(0, 3).join('.')
     const txt = (el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 45)
     return `${tag}${cls ? '.' + cls : ''}${txt ? ` "${txt}"` : ''}`
+  }
+
+  /*
+   * Item de menu quebrado em duas linhas. Não é estouro nem sobreposição — a
+   * barra continua íntegra, só fica feia. `getClientRects()` devolve uma caixa
+   * POR LINHA, então mais de uma caixa significa que o rótulo quebrou.
+   */
+  for (const link of document.querySelectorAll('header nav a, footer nav a')) {
+    const caixas = [...link.getClientRects()].filter((r) => r.width > 0 && r.height > 0)
+    if (caixas.length > 1) {
+      problemas.push({
+        tipo: 'item-de-menu-quebrado',
+        detalhe: `"${(link.textContent || '').trim().slice(0, 30)}" ocupa ${caixas.length} linhas`,
+        alvo: descrever(link),
+      })
+    }
   }
 
   const folhasDeTexto = []

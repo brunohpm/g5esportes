@@ -38,13 +38,26 @@ export async function Cabecalho() {
         */}
         <RedesSociais cfg={cfg} tamanho="compacto" />
 
-        <nav aria-label="Menu principal" className="ml-auto hidden lg:block">
+        {/*
+          O menu horizontal só a partir de xl (1280px). Medido em 1024px:
+          marca 97 + redes 112 + menu 567 + botão 200 = 976px de conteúdo,
+          mais 64 de padding e 96 de espaçamento = 1136px numa tela de 1024.
+          Não é questão de apertar — não cabe. Entre 1024 e 1279 vale o
+          hambúrguer, e o botão da Área do Aluno continua à vista.
+        */}
+        <nav aria-label="Menu principal" className="ml-auto hidden xl:block">
           <ul className="flex items-center gap-1">
             {itens.map((item) => (
               <li key={item.id ?? item.url} className="group relative">
+                {/*
+                  `whitespace-nowrap` é obrigatório: sem ele, "A G5" quebra no
+                  espaço entre as palavras quando o cabeçalho aperta e o item
+                  vira duas linhas dentro da barra. Item de menu nunca quebra.
+                  O tamanho sobe só a partir de xl, onde há folga de verdade.
+                */}
                 <Link
                   href={item.url}
-                  className="flex items-center rounded-full px-4 py-2.5 font-display text-lg font-semibold uppercase tracking-wide text-white/85 transition-colors hover:bg-white/10 hover:text-white"
+                  className="flex items-center whitespace-nowrap rounded-full px-3 py-2.5 font-display text-base font-semibold uppercase tracking-wide text-white/85 transition-colors hover:bg-white/10 hover:text-white xl:px-4 xl:text-lg"
                 >
                   {item.rotulo}
                 </Link>
@@ -79,7 +92,14 @@ export async function Cabecalho() {
           href={cfg.areaAlunoUrl ?? '#'}
           target="_blank"
           rel="noopener noreferrer"
-          className="ml-auto hidden items-center gap-2 rounded-full bg-g5-200 px-5 py-2.5 font-display text-lg font-bold uppercase tracking-wide text-g5-950 transition-transform hover:scale-[1.03] active:scale-95 lg:ml-0 lg:flex"
+          /*
+            `shrink-0` para o botão nunca ser espremido, e tamanho menor até
+            xl: em 1024px o menu de desktop aparece pela primeira vez e a barra
+            inteira (marca, redes, cinco itens e este botão) não cabia — a
+            página passava a rolar 7px de lado em TODAS as telas.
+            Conthrax aqui, igual aos demais botões do site.
+          */
+          className="ml-auto hidden shrink-0 items-center gap-2 rounded-full bg-g5-200 px-4 py-2.5 font-marca text-xs font-semibold uppercase tracking-[0.08em] text-g5-950 transition-transform hover:scale-[1.03] active:scale-95 lg:flex xl:ml-0 xl:px-5 xl:text-sm"
         >
           {cfg.areaAlunoRotulo ?? 'Área do Aluno'}
           <ExternalLink className="size-4" aria-hidden />

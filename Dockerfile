@@ -59,7 +59,13 @@ RUN mkdir -p /app/media /app/.next/cache && chown -R node:node /app/media /app/.
 USER node
 EXPOSE 3000
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=40s --retries=3 \
-  CMD curl -fsS http://127.0.0.1:3000/api/access > /dev/null || exit 1
+# Consulta o global de configurações, e não /api/access.
+#
+# /api/access resolve as regras de acesso sem tocar no banco: o container
+# ficava "healthy" enquanto TODAS as páginas públicas devolviam 500 por causa
+# de uma tabela que faltava. Este endpoint lê o mesmo global de que o layout
+# inteiro depende — se o schema estiver atrás do código, o healthcheck acusa.
+HEALTHCHECK --interval=30s --timeout=8s --start-period=60s --retries=3 \
+  CMD curl -fsS "http://127.0.0.1:3000/api/globals/configuracoes?depth=0" > /dev/null || exit 1
 
 CMD ["node", "server.js"]
