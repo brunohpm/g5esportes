@@ -122,12 +122,18 @@ export default async function Home() {
           </div>
 
           {numeros.length > 0 && (
-            <dl className="mt-16 grid max-w-3xl grid-cols-2 gap-x-8 gap-y-8 border-t border-white/15 pt-10 sm:grid-cols-4">
+            /*
+             * Uma coluna abaixo de 420px. Número não quebra linha: com duas
+             * colunas nessa largura sobram ~136px por coluna, e "1.000.000"
+             * precisa de 312px a 48px — a página inteira passava a rolar de
+             * lado por causa de um número cadastrado pelo painel.
+             */
+            <dl className="mt-16 grid max-w-3xl grid-cols-1 gap-x-8 gap-y-8 border-t border-white/15 pt-10 min-[420px]:grid-cols-2 sm:grid-cols-4">
               {numeros.map((n) => (
                 <div key={n.id ?? n.rotulo}>
                   <dt className="sr-only">{n.rotulo}</dt>
                   <dd>
-                    <span className="block font-display text-5xl font-extrabold tabular-nums leading-none text-g5-200">
+                    <span className="block font-display text-3xl font-extrabold tabular-nums leading-none text-g5-200 min-[420px]:text-4xl lg:text-5xl">
                       {n.valor}
                     </span>
                     <span className="mt-2 block text-sm leading-snug text-white/60">{n.rotulo}</span>

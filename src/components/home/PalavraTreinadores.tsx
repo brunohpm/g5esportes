@@ -62,10 +62,10 @@ export async function PalavraTreinadores({ cfg }: { cfg: Configuracoe }) {
                         )}
                       </span>
                       <span>
-                        <span className="block font-display text-xl font-bold uppercase leading-tight text-g5-950">
+                        <span className="texto-do-painel block font-display text-xl font-bold uppercase leading-tight text-g5-950">
                           {prof.titulo}
                         </span>
-                        <span className="block text-sm text-ink-muted">
+                        <span className="texto-do-painel block text-sm text-ink-muted">
                           {prof.funcao}
                           {prof.cref ? ` · CREF ${prof.cref}` : ''}
                         </span>

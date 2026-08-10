@@ -59,11 +59,11 @@ export function Plataforma({ cfg }: { cfg: Configuracoe }) {
                         <Icone className="size-5" aria-hidden />
                       </span>
                       <span className="min-w-0">
-                        <span className="block font-display text-lg font-bold uppercase leading-tight">
+                        <span className="texto-do-painel block font-display text-base font-bold uppercase leading-tight sm:text-lg">
                           {r.titulo}
                         </span>
                         {r.texto && (
-                          <span className="mt-1 block text-sm leading-relaxed text-white/60">
+                          <span className="texto-do-painel mt-1 block text-sm leading-relaxed text-white/60">
                             {r.texto}
                           </span>
                         )}

@@ -35,14 +35,25 @@ export function FaixaFotos({ cfg }: { cfg: Configuracoe }) {
         {fotos.map((foto, i) => (
           <li
             key={foto.id}
-            className="relative aspect-4/3 w-[78vw] shrink-0 snap-center overflow-hidden rounded-2xl bg-mist sm:w-[46vw] lg:w-[30vw] xl:w-[24vw]"
+            /*
+              Fundo verde-claro e não `bg-mist`: enquanto a foto carrega, o
+              quadro precisa parecer "imagem chegando", não espaço vazio.
+              Com o tom quase branco de antes, a faixa lia como se nada
+              tivesse sido cadastrado.
+            */
+            className="relative aspect-4/3 w-[78vw] shrink-0 snap-center overflow-hidden rounded-2xl bg-g5-100 sm:w-[46vw] lg:w-[30vw] xl:w-[24vw]"
           >
             <Image
               src={caminhoMidia(foto.url)!}
               alt={foto.alt ?? ''}
               fill
               sizes="(max-width: 640px) 78vw, (max-width: 1024px) 46vw, 24vw"
-              loading={i < 2 ? 'eager' : 'lazy'}
+              /*
+                As três primeiras sem lazy: elas estão na primeira tela da
+                faixa em qualquer largura, e o lazy só atrasava a aparição.
+                Da quarta em diante, aí sim, porque exigem rolagem lateral.
+              */
+              loading={i < 3 ? 'eager' : 'lazy'}
               className="object-cover"
             />
           </li>

@@ -19,7 +19,7 @@
     "migrate:wp": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" payload run scripts/migrate-wp.ts",
     "check:redirects": "cross-env NODE_OPTIONS=--no-deprecation payload run scripts/check-redirects.ts",
     "deploy:imagem": "bash deploy/enviar-imagem.sh",
-    "start": "cross-env NODE_OPTIONS=--no-deprecation next start",
+    "start": "cross-env NODE_OPTIONS=--no-deprecation node scripts/servir-local.mjs",
     "test": "npm run test:int && npm run test:e2e",
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --import=tsx/esm\" playwright test --config=playwright.config.ts",
     "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts"

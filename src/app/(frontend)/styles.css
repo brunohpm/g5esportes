@@ -113,6 +113,19 @@
   line-height: 1.05;
 }
 
+/*
+ * Texto vindo do painel dentro de caixa estreita.
+ *
+ * O conteúdo é escrito pelo cliente e pode trazer token sem espaço —
+ * "Garmin/Polar/Coros" tem 282px de largura mínima e empurrava a seção inteira
+ * além da tela num aparelho de 344px. Vale o mesmo raciocínio do titulo-display:
+ * `anywhere` e não `break-word`, porque só ele reduz o min-content e permite o
+ * item de grid encolher. Fora de @layer para vencer as utilities do Tailwind.
+ */
+.texto-do-painel {
+  overflow-wrap: anywhere;
+}
+
 @layer components {
   /* Faixa diagonal usada nos cortes entre seções — remete a pista/velocidade. */
   .corte-diagonal {

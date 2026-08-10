@@ -162,8 +162,16 @@ for (const ap of APARELHOS) {
   for (const pg of PAGINAS) {
     const pagina = await contexto.newPage()
     try {
-      await pagina.goto(`${base}${pg.caminho}`, { waitUntil: 'networkidle', timeout: 60_000 })
-      await pagina.waitForTimeout(500)
+      /*
+       * `domcontentloaded` e não `networkidle`: com o iframe do YouTube na
+       * home, a rede nunca fica ociosa — o player mantém conexões abertas e a
+       * navegação estourava o tempo limite, virando falso "falha ao carregar".
+       * A espera fixa depois cobre fontes e imagens, que é o que a medida
+       * geométrica precisa.
+       */
+      await pagina.goto(`${base}${pg.caminho}`, { waitUntil: 'domcontentloaded', timeout: 60_000 })
+      await pagina.evaluate(() => document.fonts.ready)
+      await pagina.waitForTimeout(1200)
 
       const problemas = await pagina.evaluate(medir)
       if (problemas.length) {

@@ -25,6 +25,19 @@ export const Midia: CollectionConfig = {
     staticDir: process.env.MEDIA_DIR || path.resolve(dirname, '../../media'),
     mimeTypes: ['image/*', 'application/pdf'],
     focalPoint: true,
+    /*
+     * Redimensiona o ORIGINAL antes de guardar. Sem isto, uma foto de celular
+     * ou drone entra com 4000px e ~4 MB e fica assim no disco: cada tamanho
+     * novo que o site pede obriga o otimizador a ler e reprocessar o arquivo
+     * inteiro, e a primeira visita à seção fica visivelmente lenta.
+     * 2400px cobre com folga o maior uso (imagem de fundo em tela cheia).
+     */
+    resizeOptions: {
+      width: 2400,
+      height: 2400,
+      fit: 'inside',
+      withoutEnlargement: true,
+    },
     imageSizes: [
       { name: 'thumb', width: 400, height: 300, position: 'centre' },
       { name: 'card', width: 800 },
